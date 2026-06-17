@@ -22,7 +22,17 @@ const C = {
 export function GameSkin(props: SkinProps) {
   const { step, goToStep, questItems, date, time, windowCount, needsEstimate,
           onDateChange, onTimeChange, onWindowCountChange, onNeedsEstimateChange,
-          slotMap, paused, onResume, onGoToSummary, onZipChange } = props;
+          slotMap, paused, onResume, onGoToSummary, onZipChange, mode } = props;
+
+  // Light mode only affects the Q&A panel — canvas is always dark
+  const isLight = mode === "light";
+  const panelBg     = isLight ? "#f0f0f8" : "#0a0614";
+  const dialogueBg  = isLight ? "rgba(244,244,250,0.97)" : "rgba(5,10,30,0.97)";
+  const dialogueBdr = isLight ? "1.5px solid rgba(109,40,217,0.35)" : "1.5px solid #7ec8e3";
+  const mainText    = isLight ? "#111827" : "#ddeeff";
+  const dimText     = isLight ? "rgba(17,24,39,0.5)" : "rgba(126,200,227,0.35)";
+  const questConfirmed = isLight ? "#16a34a" : "#4ade80";
+  const questPending   = isLight ? "rgba(0,0,0,0.15)" : "#3a5070";
 
   // ── Canvas refs ───────────────────────────────────────────────
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -146,7 +156,7 @@ export function GameSkin(props: SkinProps) {
     >{label}</button>
   );
 
-  const ffInput: React.CSSProperties = { fontFamily:"'Cinzel',serif", fontSize:10, background:"rgba(5,10,30,0.97)", border:"1px solid #3a5070", color:"#ddeeff", padding:"5px 8px", borderRadius:2, width:"100%", outline:"none" };
+  const ffInput: React.CSSProperties = { fontFamily:"'Cinzel',serif", fontSize:10, background:dialogueBg, border:`1px solid ${questPending}`, color:mainText, padding:"5px 8px", borderRadius:2, width:"100%", outline:"none" };
 
   // ── Menu per step ─────────────────────────────────────────────
   function renderMenu() {
@@ -208,7 +218,7 @@ export function GameSkin(props: SkinProps) {
     if (!showSlots || step !== "timeslot") return null;
     const dates = getNextDays();
     return (
-      <div style={{ maxHeight:130, overflowY:"auto", border:"1px solid #3a5070", borderRadius:2, padding:8, background:"rgba(5,10,30,0.97)", margin:"6px 0" }}>
+      <div style={{ maxHeight:130, overflowY:"auto", border:`1px solid ${questPending}`, borderRadius:2, padding:8, background:dialogueBg, margin:"6px 0" }}>
         {dates.map(d=>{const slots=slotMap[d]??[];if(!slots.length)return null;return(
           <div key={d} style={{ marginBottom:5 }}>
             <div style={{ fontFamily:"'Cinzel',serif", fontSize:8, color:"#c9a84c", letterSpacing:1, marginBottom:3 }}>{formatDate(d)}</div>
@@ -232,8 +242,8 @@ export function GameSkin(props: SkinProps) {
         </div>
         {questItems.map(q => (
           <div key={q.step} style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:5 }}>
-            <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:q.confirmed?"#4ade80":"#3a5070", flexShrink:0, width:14 }}>{q.confirmed?"✓":"○"}</span>
-            <span style={{ fontFamily:"'Cinzel',serif", fontSize:8, color:q.confirmed?"rgba(255,255,255,0.55)":"rgba(126,200,227,0.25)", letterSpacing:1, minWidth:52 }}>{q.label}</span>
+            <span style={{ fontFamily:"'Cinzel',serif", fontSize:10, color:q.confirmed?questConfirmed:questPending, flexShrink:0, width:14 }}>{q.confirmed?"✓":"○"}</span>
+            <span style={{ fontFamily:"'Cinzel',serif", fontSize:8, color:q.confirmed?mainText:dimText, letterSpacing:1, minWidth:52 }}>{q.label}</span>
             <span style={{ fontFamily:"'Cinzel',serif", fontSize:8, color:q.confirmed?"#c9a84c":"rgba(126,200,227,0.2)", flex:1 }}>{q.confirmed?q.value:"—"}</span>
           </div>
         ))}
@@ -242,14 +252,14 @@ export function GameSkin(props: SkinProps) {
   }
 
   return (
-    <div style={{ background:"#0a0614", display:"flex", flexDirection:"column", height:"100%" }}>
+    <div style={{ background:panelBg, display:"flex", flexDirection:"column", height:"100%" }}>
       <canvas ref={canvasRef} width={560} height={320}
         style={{ display:"block", width:"100%", imageRendering:"pixelated", flexShrink:0 }} />
 
       <div style={{ padding:"10px 14px 16px", flex:1, overflowY:"auto", display:"flex", flexDirection:"column" }}>
         {paused ? (
           <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-            <div style={{ fontFamily:"'Cinzel',serif", fontSize:9, color:"rgba(126,200,227,0.35)", letterSpacing:1, textAlign:"center", marginBottom:4 }}>
+            <div style={{ fontFamily:"'Cinzel',serif", fontSize:9, color:dimText, letterSpacing:1, textAlign:"center", marginBottom:4 }}>
               — Form mode active —
             </div>
             {renderQuestLog()}
@@ -263,8 +273,8 @@ export function GameSkin(props: SkinProps) {
           <div style={{ fontFamily:"'Cinzel',serif", fontSize:9, color:"#c9a84c", letterSpacing:2, marginBottom:5, textTransform:"uppercase" }}>
             Lyssara · Dispatch Keeper
           </div>
-          <div style={{ border:"1.5px solid #7ec8e3", background:"rgba(5,10,30,0.97)", borderRadius:3, padding:"10px 12px", marginBottom:8 }}>
-            <div style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:"#ddeeff", lineHeight:1.9, whiteSpace:"pre-wrap", minHeight:"3em" }}>
+          <div style={{ border:dialogueBdr, background:dialogueBg, borderRadius:3, padding:"10px 12px", marginBottom:8 }}>
+            <div style={{ fontFamily:"'Cinzel',serif", fontSize:11, color:mainText, lineHeight:1.9, whiteSpace:"pre-wrap", minHeight:"3em" }}>
               {displayText}
               {isTyping && <span style={{ display:"inline-block", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"8px solid #c9a84c", marginLeft:4, verticalAlign:"middle", animation:"triPulse 0.8s ease-in-out infinite" }} />}
             </div>

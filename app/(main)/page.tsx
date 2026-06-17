@@ -194,6 +194,18 @@ export default function HomePage() {
             onWindowCountChange={setWindowCount}
             onNeedsEstimateChange={setNeedsEstimate}
             onEstimateDeadlineChange={setEstimateDeadline}
+            address={address}
+            firstName={firstName}
+            lastName={lastName}
+            phone={phone}
+            email={email}
+            notes={notes}
+            onAddressChange={setAddress}
+            onFirstNameChange={setFirstName}
+            onLastNameChange={setLastName}
+            onPhoneChange={setPhone}
+            onEmailChange={setEmail}
+            onNotesChange={setNotes}
             paused={npcPaused}
             onResume={() => setNpcPaused(false)}
             onGoToSummary={() => router.push(`/summary?${buildParams().toString()}`)}

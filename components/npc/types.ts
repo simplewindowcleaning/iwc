@@ -1,7 +1,8 @@
 // Shared types and step definitions for all NPC skins
 
 export type Step = "location" | "timeslot" | "windows" | "estimate" | "contact" | "complete";
-export type Skin = "game" | "clean";
+export type Skin = "game" | "clean" | "power";
+export type ThemeMode = "dark" | "light";
 
 export const STEP_ORDER: Step[] = [
   "location",
@@ -50,4 +51,10 @@ export interface SkinProps {
 
   // Called when the user enters a different ZIP — bubbles up to page.tsx → MapPanel
   onZipChange?: (zip: string) => void;
+
+  // Theme — light/dark
+  mode: ThemeMode;
+
+  // Skin switching (from within a skin, e.g. "Full Form" button)
+  onSkinChange?: (skin: Skin) => void;
 }
