@@ -4,7 +4,6 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, ChevronLeft } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { AppHeader } from "@/components/AppHeader";
 import { formatDate, formatTime, formatPhone } from "@/lib/availability";
 import { PRICE_PER_WINDOW } from "@/lib/constants";
@@ -36,23 +35,27 @@ function SummaryContent() {
     setSubmitting(true);
     setError("");
 
-    const { error: err } = await supabase.from("bookings").insert({
-      service_date: date,
-      service_time: time,
-      window_count: windows,
-      address,
-      first_name: firstName || null,
-      last_name: lastName || null,
-      phone: phone || null,
-      email: email || null,
-      notes: notes || null,
-      needs_estimate: needsEstimate,
-      estimate_deadline: estimateDeadline || null,
-      total_price: total,
-      status: "pending",
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        service_date: date,
+        service_time: time,
+        window_count: windows,
+        address,
+        first_name: firstName || null,
+        last_name: lastName || null,
+        phone: phone || null,
+        email: email || null,
+        notes: notes || null,
+        needs_estimate: needsEstimate,
+        estimate_deadline: estimateDeadline || null,
+        total_price: total,
+      }),
     });
 
-    if (err) {
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
       console.error(err);
       setError("Couldn't save booking. Please try again or text us directly.");
       setSubmitting(false);

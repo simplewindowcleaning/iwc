@@ -10,6 +10,7 @@ import { formatDateFull, formatTime } from "@/lib/availability";
 import type { Booking, BlockedSlot } from "@/app/admin/types";
 
 const SESSION_KEY = "iwc_admin";
+const PW_KEY = "iwc_admin_pw";
 
 type Tab = "calendar" | "bookings" | "data" | "ics";
 
@@ -29,21 +30,35 @@ export default function AdminPage() {
   const pending = bookings.filter(b => b.status === "pending");
   const batched = bookings.filter(b => b.status === "batched");
 
-  const loadData = useCallback(async () => {
-    const [bRes, blRes] = await Promise.all([
-      supabase.from("bookings").select("*").order("service_date", { ascending: true }),
-      supabase.from("availability").select("*").eq("is_blocked", true),
-    ]);
-    if (bRes.data) setBookings(bRes.data as Booking[]);
-    if (blRes.data) setBlocked(blRes.data as BlockedSlot[]);
+  const loadData = useCallback(async (password: string) => {
+    const h = adminHeader(password);
+    // Try API routes (service client bypasses RLS); fall back to anon for staff
+    const bRes = await fetch("/api/admin/bookings", { headers: h });
+    if (bRes.ok) {
+      const { bookings: data } = await bRes.json();
+      if (data) setBookings(data as Booking[]);
+    } else {
+      const { data } = await supabase.from("bookings").select("*").order("service_date", { ascending: true });
+      if (data) setBookings(data as Booking[]);
+    }
+    const blRes = await fetch("/api/admin/block", { headers: h });
+    if (blRes.ok) {
+      const { blocked: data } = await blRes.json();
+      if (data) setBlocked(data as BlockedSlot[]);
+    } else {
+      const { data } = await supabase.from("availability").select("*").eq("is_blocked", true);
+      if (data) setBlocked(data as BlockedSlot[]);
+    }
   }, []);
 
   useEffect(() => {
     const stored = sessionStorage.getItem(SESSION_KEY);
+    const storedPw = sessionStorage.getItem(PW_KEY) ?? "";
     if (stored === "owner" || stored === "staff") {
-      setRole(stored);
+      setRole(stored as "owner" | "staff");
+      setPw(storedPw);
       setLoggedIn(true);
-      loadData();
+      loadData(storedPw);
     }
   }, [loadData]);
 
@@ -52,7 +67,7 @@ export default function AdminPage() {
     const entered = pw.trim().toLowerCase();
     if (entered === "staff") {
       sessionStorage.setItem(SESSION_KEY, "staff");
-      setRole("staff"); setLoggedIn(true); loadData();
+      setRole("staff"); setLoggedIn(true); loadData(entered);
       return;
     }
     const res = await fetch("/api/admin/auth", {
@@ -61,7 +76,8 @@ export default function AdminPage() {
     });
     if (res.ok) {
       sessionStorage.setItem(SESSION_KEY, "owner");
-      setRole("owner"); setLoggedIn(true); loadData();
+      sessionStorage.setItem(PW_KEY, entered);
+      setRole("owner"); setLoggedIn(true); loadData(entered);
     } else {
       setPwError(true);
     }
@@ -69,6 +85,7 @@ export default function AdminPage() {
 
   function handleLogout() {
     sessionStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(PW_KEY);
     setLoggedIn(false); setRole("owner"); setPw("");
   }
 
@@ -93,7 +110,7 @@ export default function AdminPage() {
       body: JSON.stringify({ ids: [...selected], status: "batched" }),
     });
     setSelected(new Set());
-    await loadData();
+    await loadData(pw);
     setBatching(false);
     setTab("data");
   }
@@ -183,7 +200,7 @@ export default function AdminPage() {
 
           {/* ── Calendar ── */}
           {tab === "calendar" && (
-            <AdminCalendar bookings={bookings} blocked={blocked} onRefresh={loadData} role={role} adminPw={pw} />
+            <AdminCalendar bookings={bookings} blocked={blocked} onRefresh={() => loadData(pw)} role={role} adminPw={pw} />
           )}
 
           {/* ── Bookings ── */}
@@ -306,7 +323,7 @@ export default function AdminPage() {
 
           {/* ── ICS Import ── */}
           {tab === "ics" && (
-            <ICSUploader onRefresh={loadData} adminPw={pw} />
+            <ICSUploader onRefresh={() => loadData(pw)} adminPw={pw} />
           )}
 
         </motion.div>

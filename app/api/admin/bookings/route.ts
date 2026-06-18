@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
 import { assertAdmin } from "@/lib/admin";
 
+export async function GET(req: NextRequest) {
+  const denied = assertAdmin(req);
+  if (denied) return denied;
+  const db = getServiceClient();
+  const { data, error } = await db
+    .from("bookings")
+    .select("*")
+    .order("service_date", { ascending: true });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ bookings: data });
+}
+
 export async function PATCH(req: NextRequest) {
   const denied = assertAdmin(req);
   if (denied) return denied;
