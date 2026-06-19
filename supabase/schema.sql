@@ -75,3 +75,14 @@ create policy "Anyone can read site_settings"
   on site_settings for select to anon using (true);
 create policy "Service role can do anything on site_settings"
   on site_settings for all to service_role using (true) with check (true);
+
+-- Promo codes — managed by admin, validated against customer input
+create table if not exists promo_codes (
+  code text primary key,
+  notes text,
+  created_at timestamptz default now()
+);
+
+alter table promo_codes enable row level security;
+create policy "Service role can do anything on promo_codes"
+  on promo_codes for all to service_role using (true) with check (true);

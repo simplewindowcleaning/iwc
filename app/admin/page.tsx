@@ -46,6 +46,10 @@ export default function AdminPage() {
   const [completions, setCompletions] = useState<GigCompletion[]>([]);
   const [approving, setApproving]     = useState<string | null>(null);
   const [promoEnabled, setPromoEnabled] = useState(false);
+  const [promoCodes, setPromoCodes]     = useState<{ code: string; notes: string | null }[]>([]);
+  const [newCode, setNewCode]           = useState("");
+  const [newNotes, setNewNotes]         = useState("");
+  const [addingCode, setAddingCode]     = useState(false);
 
   const pending = bookings.filter(b => b.status === "pending");
   const batched = bookings.filter(b => b.status === "batched");
@@ -77,6 +81,11 @@ export default function AdminPage() {
     if (sRes.ok) {
       const data = await sRes.json();
       setPromoEnabled(data.promo_enabled === "true");
+    }
+    const pcRes = await fetch("/api/admin/promo-codes", { headers: h });
+    if (pcRes.ok) {
+      const { codes } = await pcRes.json();
+      if (codes) setPromoCodes(codes);
     }
   }, []);
 
@@ -475,47 +484,147 @@ export default function AdminPage() {
 
           {/* ── Settings ── */}
           {tab === "settings" && (
-            <div style={{ padding: "8px 0" }}>
-              <div style={{ marginBottom: 20, fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                Site Settings
-              </div>
-              <div style={{
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 12, padding: "18px 20px",
-                display: "flex", alignItems: "center", gap: 16,
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.85)", marginBottom: 4 }}>
-                    Promo Code Box
+            <div style={{ padding: "8px 0", display: "flex", flexDirection: "column", gap: 24 }}>
+
+              {/* Promo Code Box toggle */}
+              <div>
+                <div style={{ marginBottom: 12, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Site Settings</div>
+                <div style={{
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 12, padding: "18px 20px",
+                  display: "flex", alignItems: "center", gap: 16,
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.85)", marginBottom: 4 }}>Promo Code Box</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                      {promoEnabled
+                        ? "Customers see the promo code field when they select more than the minimum windows"
+                        : "Promo code field is hidden from customers"}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
-                    {promoEnabled
-                      ? "Customers see the promo code field when they select more than the minimum windows"
-                      : "Promo code field is hidden from customers"}
-                  </div>
+                  <button
+                    onClick={async () => {
+                      const next = !promoEnabled;
+                      setPromoEnabled(next);
+                      const stored = localStorage.getItem(PW_KEY) ?? "";
+                      await fetch("/api/admin/settings", {
+                        method: "PATCH",
+                        headers: { ...adminHeader(stored), "Content-Type": "application/json" },
+                        body: JSON.stringify({ promo_enabled: String(next) }),
+                      });
+                    }}
+                    style={{
+                      padding: "8px 20px", borderRadius: 9, fontSize: 13, fontWeight: 700,
+                      background: promoEnabled ? "#a78bfa" : "rgba(167,139,250,0.1)",
+                      color: promoEnabled ? "#08080e" : "#a78bfa",
+                      border: `1px solid ${promoEnabled ? "#a78bfa" : "rgba(167,139,250,0.25)"}`,
+                      cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
+                    }}
+                  >
+                    {promoEnabled ? "Enabled" : "Disabled"}
+                  </button>
                 </div>
-                <button
-                  onClick={async () => {
-                    const next = !promoEnabled;
-                    setPromoEnabled(next);
-                    const stored = localStorage.getItem(PW_KEY) ?? "";
-                    await fetch("/api/admin/settings", {
-                      method: "PATCH",
-                      headers: { ...adminHeader(stored), "Content-Type": "application/json" },
-                      body: JSON.stringify({ promo_enabled: String(next) }),
-                    });
-                  }}
-                  style={{
-                    padding: "8px 20px", borderRadius: 9, fontSize: 13, fontWeight: 700,
-                    background: promoEnabled ? "#a78bfa" : "rgba(167,139,250,0.1)",
-                    color: promoEnabled ? "#08080e" : "#a78bfa",
-                    border: `1px solid ${promoEnabled ? "#a78bfa" : "rgba(167,139,250,0.25)"}`,
-                    cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
-                  }}
-                >
-                  {promoEnabled ? "Enabled" : "Disabled"}
-                </button>
               </div>
+
+              {/* Promo code list */}
+              <div>
+                <div style={{ marginBottom: 12, fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Active Promo Codes</div>
+
+                {/* Add new code */}
+                <div style={{
+                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 12, padding: "16px 20px", marginBottom: 10,
+                  display: "flex", gap: 8, alignItems: "center",
+                }}>
+                  <input
+                    placeholder="CODE"
+                    value={newCode}
+                    onChange={e => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ""))}
+                    onKeyDown={async e => { if (e.key === "Enter") { e.preventDefault(); (document.activeElement as HTMLElement)?.blur(); } }}
+                    style={{
+                      background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: 8, color: "white", fontSize: 13, fontWeight: 700,
+                      padding: "8px 12px", outline: "none", fontFamily: "inherit",
+                      letterSpacing: "0.08em", width: 140, flexShrink: 0,
+                    }}
+                  />
+                  <input
+                    placeholder="Notes (optional)"
+                    value={newNotes}
+                    onChange={e => setNewNotes(e.target.value)}
+                    style={{
+                      background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: 8, color: "rgba(255,255,255,0.75)", fontSize: 12,
+                      padding: "8px 12px", outline: "none", fontFamily: "inherit", flex: 1,
+                    }}
+                  />
+                  <button
+                    disabled={!newCode.trim() || addingCode}
+                    onClick={async () => {
+                      if (!newCode.trim()) return;
+                      setAddingCode(true);
+                      const stored = localStorage.getItem(PW_KEY) ?? "";
+                      const res = await fetch("/api/admin/promo-codes", {
+                        method: "POST",
+                        headers: { ...adminHeader(stored), "Content-Type": "application/json" },
+                        body: JSON.stringify({ code: newCode.trim(), notes: newNotes.trim() || null }),
+                      });
+                      if (res.ok) {
+                        setPromoCodes(prev => [{ code: newCode.trim().toUpperCase(), notes: newNotes.trim() || null }, ...prev]);
+                        setNewCode(""); setNewNotes("");
+                      }
+                      setAddingCode(false);
+                    }}
+                    style={{
+                      padding: "8px 18px", borderRadius: 8, fontSize: 12, fontWeight: 700,
+                      background: newCode.trim() ? "#a78bfa" : "rgba(167,139,250,0.1)",
+                      color: newCode.trim() ? "#08080e" : "rgba(167,139,250,0.35)",
+                      border: "1px solid rgba(167,139,250,0.25)",
+                      cursor: newCode.trim() ? "pointer" : "not-allowed", flexShrink: 0,
+                    }}
+                  >
+                    {addingCode ? "Adding…" : "Add"}
+                  </button>
+                </div>
+
+                {/* Code list */}
+                {promoCodes.length === 0 && (
+                  <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, paddingLeft: 4 }}>No promo codes yet.</p>
+                )}
+                {promoCodes.map(pc => (
+                  <div key={pc.code} style={{
+                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)",
+                    borderRadius: 10, padding: "12px 16px", marginBottom: 6,
+                    display: "flex", alignItems: "center", gap: 12,
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#a78bfa", letterSpacing: "0.08em", minWidth: 120 }}>
+                      {pc.code}
+                    </span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", flex: 1 }}>
+                      {pc.notes || <span style={{ opacity: 0.4 }}>no notes</span>}
+                    </span>
+                    <button
+                      onClick={async () => {
+                        const stored = localStorage.getItem(PW_KEY) ?? "";
+                        const res = await fetch("/api/admin/promo-codes", {
+                          method: "DELETE",
+                          headers: { ...adminHeader(stored), "Content-Type": "application/json" },
+                          body: JSON.stringify({ code: pc.code }),
+                        });
+                        if (res.ok) setPromoCodes(prev => prev.filter(c => c.code !== pc.code));
+                      }}
+                      style={{
+                        background: "transparent", border: "1px solid rgba(251,113,133,0.25)",
+                        borderRadius: 6, color: "rgba(251,113,133,0.5)", fontSize: 11,
+                        padding: "4px 10px", cursor: "pointer", flexShrink: 0,
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
             </div>
           )}
 
