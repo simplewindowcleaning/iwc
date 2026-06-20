@@ -81,7 +81,8 @@ export function ChatWidget() {
         });
       }
     } catch (err) {
-      setMessages(m => [...m, { role: "assistant", content: `Error: ${String(err)}` }]);
+      console.error(err);
+      setMessages(m => [...m, { role: "assistant", content: "Something went wrong — try again or text (831) 331-1133" }]);
     } finally {
       setLoading(false);
     }
