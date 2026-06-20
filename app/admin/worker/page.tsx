@@ -118,7 +118,7 @@ export default function WorkerPage() {
           <button onClick={() => router.push("/admin")}
             style={{ ...btnStyle("rgba(255,255,255,0.25)"), marginBottom: 8 }}>← Admin</button>
           <h1 style={{ color: "white", fontSize: 20, fontWeight: 700, margin: 0 }}>Worker App</h1>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 2 }}>Ladderless Windows crew</p>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 2 }}>Simple Windows crew</p>
         </div>
 
         {/* Clock Out — placeholder */}

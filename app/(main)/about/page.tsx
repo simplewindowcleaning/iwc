@@ -30,7 +30,7 @@ export default function AboutPage() {
             <span style={{ color: "#a78bfa" }}>Instantly.</span>
           </h1>
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, lineHeight: 1.7 }}>
-            Ladderless Windows started with one idea: window cleaning should be as easy as ordering a coffee. No estimates, no waiting, no ladders dragging across your siding.
+            Simple Windows started with one idea: window cleaning should be as easy as ordering a coffee. No estimates, no waiting, no ladders dragging across your siding.
           </p>
         </motion.div>
 

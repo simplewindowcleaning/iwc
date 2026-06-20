@@ -1030,7 +1030,7 @@ function LogoBanner() {
           fontSize: 28, fontWeight: 800, color: "rgba(255,255,255,0.92)",
           letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 6,
         }}>
-          Ladderless<br />Windows
+          Simple<br />Windows
         </div>
         <div style={{
           fontSize: 10, fontWeight: 600, letterSpacing: "0.16em",

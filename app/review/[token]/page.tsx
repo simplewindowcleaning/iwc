@@ -119,7 +119,7 @@ export default function ReviewPage() {
         {/* Branding */}
         <div style={{ textAlign: "center", marginBottom: 22 }}>
           <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(126,200,227,0.6)", marginBottom: 4 }}>
-            Ladderless Windows
+            Simple Windows
           </div>
           <h1 style={{ color: "white", fontSize: 20, fontWeight: 700, margin: "0 0 4px" }}>
             {customerName ? `Thanks, ${customerName}!` : "Job Complete"}

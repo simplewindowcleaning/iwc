@@ -1,4 +1,4 @@
-export const metadata = { title: "Admin — Ladderless Windows" };
+export const metadata = { title: "Admin — Simple Windows" };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (

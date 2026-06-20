@@ -32,7 +32,7 @@ function SummaryContent() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
-  const venmoLink = `venmo://paycharge?txn=pay&recipients=LadderlessWindows&amount=${total}&note=Window+cleaning+${encodeURIComponent(date)}`;
+  const venmoLink = `venmo://paycharge?txn=pay&recipients=SimpleWindowCleaning&amount=${total}&note=Window+cleaning+${encodeURIComponent(date)}`;
 
   async function completeBooking() {
     setSubmitting(true);
@@ -157,7 +157,7 @@ function SummaryContent() {
             Pay ${total} on Venmo
           </a>
           <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 10, textAlign: "center", marginTop: 8 }}>
-            Venmo @LadderlessWindows — or pay in person day-of
+            Venmo @SimpleWindowCleaning — or pay in person day-of
           </p>
         </motion.div>
 

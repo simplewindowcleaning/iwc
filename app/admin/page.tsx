@@ -201,7 +201,7 @@ export default function AdminPage() {
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;
-    a.download = `ladderless-jobs-${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `simple-windows-jobs-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -211,7 +211,7 @@ export default function AdminPage() {
       <div className="min-h-screen flex items-center justify-center px-4">
         <motion.div className="w-full max-w-xs" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <h1 style={{ color: "white", fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Admin</h1>
-          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginBottom: 20 }}>Ladderless Windows dashboard</p>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 12, marginBottom: 20 }}>Simple Windows dashboard</p>
           <form onSubmit={handleLogin} className="flex flex-col gap-3">
             <div>
               <label className="field-label">Password</label>
@@ -249,7 +249,7 @@ export default function AdminPage() {
     <div className="min-h-screen px-4 py-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 style={{ color: "white", fontSize: 18, fontWeight: 700 }}>Ladderless Admin</h1>
+          <h1 style={{ color: "white", fontSize: 18, fontWeight: 700 }}>Simple Windows Admin</h1>
           <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 11, marginTop: 2 }}>
             {pending.length} pending · {batched.length} batched
           </p>

@@ -143,7 +143,7 @@ export function CleanSkin(props: SkinProps) {
         <>
           <div style={{ marginBottom:14, paddingBottom:14, borderBottom:`1px solid ${T.ACCENT_DIM}` }}>
             <div style={{ fontSize:13, fontWeight:700, color:T.TEXT, lineHeight:1.4, marginBottom:5 }}>
-              Welcome to Instant Window Cleaning for Ladderless Windows
+              Welcome to Instant Window Cleaning for Simple Windows
             </div>
             <div style={{ fontSize:11, color:T.TEXT_DIM, lineHeight:1.45 }}>
               Book some no-hassle windows. Full house estimates too.

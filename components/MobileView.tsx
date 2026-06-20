@@ -156,7 +156,7 @@ export function MobileView(props: Props) {
               ✦ Santa Cruz County
             </div>
             <div style={{ fontSize: 26, fontWeight: 800, color: "rgba(255,255,255,0.94)", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 6 }}>
-              Ladderless Windows
+              Simple Windows
             </div>
             <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: `${TEAL}0.5)`, marginBottom: 16 }}>
               Instant Window Cleaning
@@ -398,7 +398,7 @@ export function MobileView(props: Props) {
             padding: "8px 12px 6px",
           }}>
             <div style={{ fontSize: 6, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: `${TEAL}0.55)`, marginBottom: 3 }}>✦ Santa Cruz</div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>Ladderless Windows</div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>Simple Windows</div>
           </div>
         </motion.div>
       )}

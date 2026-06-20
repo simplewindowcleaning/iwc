@@ -149,7 +149,7 @@ export default function CommercialPage() {
             ✦ Santa Cruz County
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.92)", letterSpacing: "-0.02em", lineHeight: 1.1, marginBottom: 5 }}>
-            Ladderless<br />Windows
+            Simple<br />Windows
           </div>
           <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(126,200,227,0.55)" }}>
             Instant Window Cleaning

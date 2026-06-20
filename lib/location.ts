@@ -18,7 +18,7 @@
 
 import type { ServiceArea } from "./serviceAreaTypes";
 
-export const BUSINESS_NAME  = "Ladderless Windows";
+export const BUSINESS_NAME  = "Simple Windows";
 export const LOCATION_CITY  = "Santa Cruz, CA";
 
 // The ZIP whose fly-to gets a dramatic landmark zoom (set to "" to disable)

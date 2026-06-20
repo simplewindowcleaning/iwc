@@ -11,8 +11,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Ladderless Windows — Instant Window Cleaning",
-  description: "Book window cleaning instantly. Ladderless, fast, priced per window.",
+  title: "Simple Windows — Instant Window Cleaning",
+  description: "Book window cleaning instantly. Simple, fast, priced per window.",
   icons: { icon: "/favicon.ico" },
 };
 
