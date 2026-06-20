@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { AdminCalendar } from "@/components/admin/AdminCalendar";
 import { ICSUploader } from "@/components/admin/ICSUploader";
+import { FinanceTab } from "@/components/admin/FinanceTab";
 import { motion, AnimatePresence } from "framer-motion";
 import { adminHeader } from "@/lib/admin";
 import { formatDateFull, formatTime } from "@/lib/availability";
@@ -13,7 +14,7 @@ import type { Booking, BlockedSlot } from "@/app/admin/types";
 const SESSION_KEY = "iwc_admin";
 const PW_KEY = "iwc_admin_pw";
 
-type Tab = "calendar" | "bookings" | "data" | "ics" | "reviews" | "settings" | "analytics";
+type Tab = "calendar" | "bookings" | "data" | "ics" | "reviews" | "settings" | "analytics" | "finance";
 
 interface GigCompletion {
   id: string;
@@ -45,6 +46,9 @@ export default function AdminPage() {
   const [batching, setBatching] = useState(false);
   const [completions, setCompletions] = useState<GigCompletion[]>([]);
   const [approving, setApproving]     = useState<string | null>(null);
+  const [finTx, setFinTx]       = useState<{ id: string; date: string; description: string; amount: number; type: "income" | "expense"; source: string; category: string | null }[]>([]);
+  const [finMile, setFinMile]   = useState<{ id: string; date: string; miles: number; description: string | null }[]>([]);
+
   const [analytics, setAnalytics] = useState<{
     summary: { totalBookings: number; bookings30d: number; bookings7d: number; totalRevenue: number; revenue30d: number; revenue7d: number; avgTicket: number; avgWindows: number };
     byZip: { zip: string; count: number; revenue: number }[];
@@ -98,6 +102,10 @@ export default function AdminPage() {
       const data = await anRes.json();
       setAnalytics(data);
     }
+    const txRes = await fetch("/api/admin/transactions", { headers: h });
+    if (txRes.ok) { const { transactions: d } = await txRes.json(); if (d) setFinTx(d); }
+    const miRes = await fetch("/api/admin/mileage", { headers: h });
+    if (miRes.ok) { const { entries: d } = await miRes.json(); if (d) setFinMile(d); }
   }, []);
 
   async function handleReviewStatus(id: string, status: "approved" | "rejected") {
@@ -229,6 +237,7 @@ export default function AdminPage() {
     { id: "reviews",  label: `Reviews${pendingReviews.length ? ` (${pendingReviews.length})` : ""}` },
     { id: "settings",   label: "Settings" },
     { id: "analytics",  label: "Analytics" },
+    { id: "finance",    label: "Finance" },
   ];
 
   const S: Record<string, React.CSSProperties> = {
@@ -638,6 +647,17 @@ export default function AdminPage() {
               </div>
 
             </div>
+          )}
+
+          {/* ── Finance ── */}
+          {tab === "finance" && (
+            <FinanceTab
+              pw={pw}
+              transactions={finTx}
+              mileage={finMile}
+              onTransactionsChange={setFinTx}
+              onMileageChange={setFinMile}
+            />
           )}
 
           {/* ── Analytics ── */}
