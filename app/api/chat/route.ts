@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const SYSTEM = `You are the customer service assistant for Simple Windows, a premium window cleaning business serving Santa Cruz County, CA. Be friendly, knowledgeable, and direct. Keep replies conversational and concise — no corporate fluff.
@@ -89,30 +88,13 @@ export async function POST(req: NextRequest) {
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const stream = await client.messages.create({
+  const message = await client.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 512,
     system: SYSTEM,
     messages,
-    stream: true,
   });
 
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    async start(controller) {
-      for await (const chunk of stream) {
-        if (
-          chunk.type === "content_block_delta" &&
-          chunk.delta.type === "text_delta"
-        ) {
-          controller.enqueue(encoder.encode(chunk.delta.text));
-        }
-      }
-      controller.close();
-    },
-  });
-
-  return new Response(readable, {
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
-  });
+  const text = message.content[0].type === "text" ? message.content[0].text : "";
+  return NextResponse.json({ text });
 }

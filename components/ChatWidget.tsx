@@ -61,31 +61,11 @@ export function ChatWidget() {
         body: JSON.stringify({ messages: next }),
       });
 
-      if (!res.body) throw new Error("No stream");
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let full = "";
-      setMessages(m => [...m, { role: "assistant", content: "" }]);
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        full += decoder.decode(value, { stream: true });
-        setMessages(m => {
-          const copy = [...m];
-          copy[copy.length - 1] = { role: "assistant", content: full };
-          return copy;
-        });
-      }
-
+      const { text: full } = await res.json();
       const { clean, escalation } = parseEscalation(full);
+      setMessages(m => [...m, { role: "assistant", content: clean }]);
+
       if (escalation) {
-        setMessages(m => {
-          const copy = [...m];
-          copy[copy.length - 1] = { role: "assistant", content: clean };
-          return copy;
-        });
         setEscalated(true);
         const transcript = [...next, { role: "assistant" as const, content: clean }];
         await fetch("/api/chat/escalate", {
@@ -164,10 +144,10 @@ export function ChatWidget() {
                 Simple Windows
               </div>
               <div style={{ fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>
-                Customer Support
+                Customer Service
               </div>
               <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>
-                Answers instant · can connect you with Chris
+                AI · Ask for a person  M–S 6am–5pm exc. holidays
               </div>
             </div>
 
