@@ -101,6 +101,8 @@ function bankCSVtoRows(text: string): ParsedRow[] {
   return rows;
 }
 
+const ACCT_NAMES: Record<1 | 2 | 3, string> = { 1: "Shark", 2: "IC", 3: "PayPal" };
+
 // ── Schedule C categories ─────────────────────────────────────────────────────
 
 export const SCHED_C_INCOME = [
@@ -218,7 +220,7 @@ function TxRow({ tx, onDelete, pw, compact }: { tx: Transaction; onDelete: (id: 
       {!compact && <span style={{ color: "rgba(255,255,255,0.28)", width: 84, flexShrink: 0, fontSize: 10 }}>{tx.date}</span>}
       <span style={{ color: "rgba(255,255,255,0.65)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {tx.description}
-        {tx.source?.startsWith("upload") && <span style={{ marginLeft: 6, fontSize: 9, color: "rgba(255,255,255,0.2)" }}>{tx.source === "upload-acct2" ? "acct 2" : "acct 1"}</span>}
+        {tx.source?.startsWith("upload-acct") && <span style={{ marginLeft: 6, fontSize: 9, color: "rgba(255,255,255,0.2)" }}>{ACCT_NAMES[Number(tx.source.slice(-1)) as 1|2|3] ?? tx.source}</span>}
       </span>
       <span style={{ color: tx.type === "income" ? `${TEAL}0.85)` : `${RED}0.75)`, fontWeight: 700, flexShrink: 0, width: 64, textAlign: "right" }}>
         {tx.type === "expense" ? "−" : ""}${Number(tx.amount).toFixed(2)}
@@ -340,10 +342,11 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
 }) {
   const fileRef1 = useRef<HTMLInputElement>(null);
   const fileRef2 = useRef<HTMLInputElement>(null);
+  const fileRef3 = useRef<HTMLInputElement>(null);
   const [preview, setPreview]       = useState<ParsedRow[] | null>(null);
-  const [previewAcct, setPreviewAcct] = useState<1 | 2>(1);
+  const [previewAcct, setPreviewAcct] = useState<1 | 2 | 3>(1);
   const [importing, setImporting]   = useState(false);
-  const [finTab, setFinTab] = useState<"overview" | "acct1" | "acct2" | "taxes" | "inc-list" | "exp-list" | "mile-list">("overview");
+  const [finTab, setFinTab] = useState<"overview" | "acct1" | "acct2" | "acct3" | "taxes" | "inc-list" | "exp-list" | "mile-list">("overview");
   const [search, setSearch] = useState("");
   const [mileInlineDate, setMileInlineDate] = useState<string | null>(null);
   const [mileInlineVal, setMileInlineVal]   = useState("");
@@ -368,7 +371,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
     .filter(m => m.date.startsWith(String(ytdYear)))
     .reduce((s, m) => s + Number(m.miles), 0);
 
-  function handleFile(acct: 1 | 2) {
+  function handleFile(acct: 1 | 2 | 3) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files ?? []);
       if (!files.length) return;
@@ -477,6 +480,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
 
   const acct1 = transactions.filter(t => t.source === "upload-acct1" || t.source === "manual");
   const acct2 = transactions.filter(t => t.source === "upload-acct2");
+  const acct3 = transactions.filter(t => t.source === "upload-acct3");
 
   const tabBtn = (id: typeof finTab, label: string) => (
     <button
@@ -496,8 +500,9 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
       {/* View tabs */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {tabBtn("overview", "Overview")}
-        {tabBtn("acct1", "Account 1")}
-        {tabBtn("acct2", "Account 2")}
+        {tabBtn("acct1", "Shark")}
+        {tabBtn("acct2", "IC")}
+        {tabBtn("acct3", "PayPal")}
         {tabBtn("taxes", "Taxes / Sched C")}
         {tabBtn("inc-list", "Income")}
         {tabBtn("exp-list", "Expenses")}
@@ -530,7 +535,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>
-              Account {previewAcct} — {preview.filter(r => r.selected).length} of {preview.length} rows selected
+              {ACCT_NAMES[previewAcct]} — {preview.filter(r => r.selected).length} of {preview.length} rows selected
             </span>
             <div style={{ display: "flex", gap: 8 }}>
               <button onClick={() => setPreview(null)}
@@ -580,9 +585,9 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
       )}
 
       {/* Account views */}
-      {(finTab === "acct1" || finTab === "acct2") && (() => {
-        const list = finTab === "acct1" ? acct1 : acct2;
-        const label = finTab === "acct1" ? "Account 1" : "Account 2";
+      {(finTab === "acct1" || finTab === "acct2" || finTab === "acct3") && (() => {
+        const list = finTab === "acct1" ? acct1 : finTab === "acct2" ? acct2 : acct3;
+        const label = finTab === "acct1" ? ACCT_NAMES[1] : finTab === "acct2" ? ACCT_NAMES[2] : ACCT_NAMES[3];
         const acctIncome  = list.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
         const acctExpense = list.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
         return (
@@ -690,10 +695,12 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
           <div style={col}>
             {/* Upload / add controls */}
             <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-              <button onClick={() => fileRef1.current?.click()} style={{ background: `${TEAL}0.08)`, border: `1px solid ${TEAL}0.2)`, borderRadius: 8, color: `${TEAL}0.8)`, fontSize: 11, fontWeight: 700, padding: "6px 11px", cursor: "pointer" }}>↑ CSV — Acct 1</button>
-              <button onClick={() => fileRef2.current?.click()} style={{ background: `${TEAL}0.08)`, border: `1px solid ${TEAL}0.2)`, borderRadius: 8, color: `${TEAL}0.8)`, fontSize: 11, fontWeight: 700, padding: "6px 11px", cursor: "pointer" }}>↑ CSV — Acct 2</button>
+              <button onClick={() => fileRef1.current?.click()} style={{ background: `${TEAL}0.08)`, border: `1px solid ${TEAL}0.2)`, borderRadius: 8, color: `${TEAL}0.8)`, fontSize: 11, fontWeight: 700, padding: "6px 11px", cursor: "pointer" }}>↑ CSV — Shark</button>
+              <button onClick={() => fileRef2.current?.click()} style={{ background: `${TEAL}0.08)`, border: `1px solid ${TEAL}0.2)`, borderRadius: 8, color: `${TEAL}0.8)`, fontSize: 11, fontWeight: 700, padding: "6px 11px", cursor: "pointer" }}>↑ CSV — IC</button>
+              <button onClick={() => fileRef3.current?.click()} style={{ background: `${TEAL}0.08)`, border: `1px solid ${TEAL}0.2)`, borderRadius: 8, color: `${TEAL}0.8)`, fontSize: 11, fontWeight: 700, padding: "6px 11px", cursor: "pointer" }}>↑ CSV — PayPal</button>
               <input ref={fileRef1} type="file" accept=".csv,.tsv,.txt" multiple onChange={handleFile(1)} style={{ display: "none" }} />
               <input ref={fileRef2} type="file" accept=".csv,.tsv,.txt" multiple onChange={handleFile(2)} style={{ display: "none" }} />
+              <input ref={fileRef3} type="file" accept=".csv,.tsv,.txt" multiple onChange={handleFile(3)} style={{ display: "none" }} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 200px", gap: 8, marginBottom: 8 }}>
               <AddRow type="income" pw={pw} onAdd={t => onTransactionsChange([t, ...transactions])} />
