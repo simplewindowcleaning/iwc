@@ -238,12 +238,20 @@ function MileRow({ entry, onDelete, pw, compact }: { entry: MileageEntry; onDele
     });
     onDelete(entry.id);
   }
+  if (compact) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 2, padding: "7px 6px", borderBottom: "1px solid rgba(255,255,255,0.04)", minHeight: 35 }}>
+        <span style={{ color: `${PURPLE}0.85)`, fontWeight: 700, fontSize: 12 }}>{Number(entry.miles).toFixed(1)}</span>
+        <button onClick={del} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.15)", cursor: "pointer", fontSize: 13, padding: "0 2px", flexShrink: 0 }}>×</button>
+      </div>
+    );
+  }
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 6, padding: "7px 10px",
       borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: 12, minHeight: 35,
     }}>
-      {!compact && <span style={{ color: "rgba(255,255,255,0.28)", width: 84, flexShrink: 0, fontSize: 10 }}>{entry.date}</span>}
+      <span style={{ color: "rgba(255,255,255,0.28)", width: 84, flexShrink: 0, fontSize: 10 }}>{entry.date}</span>
       <span style={{ color: "rgba(255,255,255,0.55)", flex: 1, fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.description ?? "—"}</span>
       <span style={{ color: `${PURPLE}0.85)`, fontWeight: 700, flexShrink: 0, width: 58, textAlign: "right", fontSize: 12 }}>
         {Number(entry.miles).toFixed(1)} mi
@@ -335,8 +343,11 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
   const [preview, setPreview]       = useState<ParsedRow[] | null>(null);
   const [previewAcct, setPreviewAcct] = useState<1 | 2>(1);
   const [importing, setImporting]   = useState(false);
-  const [finTab, setFinTab] = useState<"overview" | "acct1" | "acct2" | "taxes" | "inc-list" | "exp-list">("overview");
+  const [finTab, setFinTab] = useState<"overview" | "acct1" | "acct2" | "taxes" | "inc-list" | "exp-list" | "mile-list">("overview");
   const [search, setSearch] = useState("");
+  const [mileInlineDate, setMileInlineDate] = useState<string | null>(null);
+  const [mileInlineVal, setMileInlineVal]   = useState("");
+  const [mileInlineDesc, setMileInlineDesc] = useState("");
 
   // Mileage add form state
   const today = new Date().toISOString().slice(0, 10);
@@ -419,6 +430,22 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
     onTransactionsChange(transactions.map(t => ids.includes(t.id) ? { ...t, category } : t));
   }
 
+  async function submitInlineMile(date: string) {
+    const miles = parseFloat(mileInlineVal);
+    if (!miles) return;
+    setMBusy(true);
+    const res = await fetch("/api/admin/mileage", {
+      method: "POST", headers: adminHeader(pw),
+      body: JSON.stringify({ date, miles, description: mileInlineDesc.trim() || null }),
+    });
+    if (res.ok) {
+      const { entry } = await res.json();
+      onMileageChange([entry, ...mileage]);
+    }
+    setMileInlineDate(null); setMileInlineVal(""); setMileInlineDesc("");
+    setMBusy(false);
+  }
+
   async function addMile() {
     const miles = parseFloat(mMiles);
     if (!miles || !mDate) return;
@@ -474,6 +501,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
         {tabBtn("taxes", "Taxes / Sched C")}
         {tabBtn("inc-list", "Income")}
         {tabBtn("exp-list", "Expenses")}
+        {tabBtn("mile-list", "Mileage")}
       </div>
 
       {/* YTD summary strip */}
@@ -684,10 +712,10 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
             </div>
 
             {/* Column headers */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 200px", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 4 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 78px", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: 4 }}>
               {colHead("Income", `${TEAL}0.6)`)}
               {colHead("Expenses", `${RED}0.6)`)}
-              {colHead("Mileage", `${PURPLE}0.6)`)}
+              {colHead("Mi", `${PURPLE}0.6)`)}
             </div>
 
             {/* Date-aligned rows */}
@@ -697,13 +725,56 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
                 const month = date.slice(0, 7);
                 const showSep = month !== lastMonth3;
                 lastMonth3 = month;
-                const dayInc = income.filter(t => t.date === date);
-                const dayExp = expense.filter(t => t.date === date);
+                const dayInc  = income.filter(t => t.date === date);
+                const dayExp  = expense.filter(t => t.date === date);
                 const dayMile = mileage.filter(m => m.date === date);
                 const mileTotal = dayMile.reduce((s, m) => s + Number(m.miles), 0);
-                const maxRows = Math.max(dayInc.length, dayExp.length, dayMile.length, 1);
+                // +1 so there's always a "+" row at the end of the mileage column
+                const maxRows = Math.max(dayInc.length, dayExp.length, dayMile.length + 1);
                 const mc = monthColor(date);
                 const dateLabel = new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+                const mileCell = (i: number) => {
+                  if (i < dayMile.length) {
+                    return <MileRow compact entry={dayMile[i]} pw={pw} onDelete={id => onMileageChange(mileage.filter(x => x.id !== id))} />;
+                  }
+                  if (i === dayMile.length) {
+                    // "+" button or inline add form
+                    if (mileInlineDate === date) {
+                      return (
+                        <div style={{ padding: "5px 6px", minHeight: 35, borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div style={{ display: "flex", gap: 3, alignItems: "center" }}>
+                            <input
+                              autoFocus type="number" min="0" step="0.1" placeholder="mi"
+                              value={mileInlineVal}
+                              onChange={e => setMileInlineVal(e.target.value)}
+                              onKeyDown={e => { if (e.key === "Enter") submitInlineMile(date); if (e.key === "Escape") { setMileInlineDate(null); setMileInlineVal(""); setMileInlineDesc(""); } }}
+                              style={{ ...fieldStyle, width: 38, fontSize: 11, padding: "3px 4px" }}
+                            />
+                            <button onClick={() => submitInlineMile(date)} disabled={!mileInlineVal}
+                              style={{ background: `${PURPLE}0.2)`, border: `1px solid ${PURPLE}0.3)`, borderRadius: 5, color: `${PURPLE}0.9)`, fontSize: 11, padding: "3px 5px", cursor: "pointer", opacity: mileInlineVal ? 1 : 0.4 }}>✓</button>
+                            <button onClick={() => { setMileInlineDate(null); setMileInlineVal(""); setMileInlineDesc(""); }}
+                              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.2)", fontSize: 13, cursor: "pointer", padding: "0 1px" }}>×</button>
+                          </div>
+                          <input placeholder="desc (optional)"
+                            value={mileInlineDesc} onChange={e => setMileInlineDesc(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && submitInlineMile(date)}
+                            style={{ ...fieldStyle, width: "100%", fontSize: 10, padding: "2px 4px", marginTop: 3 }}
+                          />
+                        </div>
+                      );
+                    }
+                    return (
+                      <div style={{ minHeight: 35, display: "flex", alignItems: "center", justifyContent: "center", borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
+                        <button
+                          onClick={() => { setMileInlineDate(date); setMileInlineVal(""); setMileInlineDesc(""); }}
+                          style={{ background: "none", border: "none", color: `${PURPLE}0.22)`, cursor: "pointer", fontSize: 15, padding: "2px 10px", lineHeight: 1, fontWeight: 700 }}
+                        >+</button>
+                      </div>
+                    );
+                  }
+                  return <EmptyCell />;
+                };
 
                 return (
                   <React.Fragment key={date}>
@@ -711,11 +782,11 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
                     {/* Date label row */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px 2px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
                       <span style={{ fontSize: 10, fontWeight: 800, color: `${mc}0.5)`, width: 110, flexShrink: 0 }}>{dateLabel}</span>
-                      {dayMile.length > 1 && <span style={{ fontSize: 9, color: `${PURPLE}0.45)`, marginLeft: "auto" }}>{mileTotal.toFixed(1)} mi total</span>}
+                      {dayMile.length > 1 && <span style={{ fontSize: 9, color: `${PURPLE}0.45)`, marginLeft: "auto" }}>{mileTotal.toFixed(1)} mi</span>}
                     </div>
                     {/* Aligned rows */}
                     {Array.from({ length: maxRows }).map((_, i) => (
-                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 200px" }}>
+                      <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 78px" }}>
                         <div>{dayInc[i]
                           ? <TxRow compact tx={dayInc[i]} pw={pw} onDelete={id => onTransactionsChange(transactions.filter(x => x.id !== id))} />
                           : <EmptyCell />}
@@ -724,10 +795,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
                           ? <TxRow compact tx={dayExp[i]} pw={pw} onDelete={id => onTransactionsChange(transactions.filter(x => x.id !== id))} />
                           : <EmptyCell />}
                         </div>
-                        <div>{dayMile[i]
-                          ? <MileRow compact entry={dayMile[i]} pw={pw} onDelete={id => onMileageChange(mileage.filter(x => x.id !== id))} />
-                          : <EmptyCell />}
-                        </div>
+                        <div>{mileCell(i)}</div>
                       </div>
                     ))}
                   </React.Fragment>
@@ -764,6 +832,29 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
           <div style={{ maxHeight: 600, overflowY: "auto" }}>
             {expense.length === 0 && <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>No expenses yet.</p>}
             <TxListWithSeparators list={expense} pw={pw} onDelete={id => onTransactionsChange(transactions.filter(x => x.id !== id))} />
+          </div>
+        </div>
+      )}
+
+      {/* Mileage list tab */}
+      {finTab === "mile-list" && (
+        <div style={col}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12 }}>
+            <div style={sectionLabel}>All Mileage</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: `${PURPLE}0.9)` }}>{milesYTD.toFixed(1)} mi YTD</div>
+          </div>
+          {/* Add form */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+            <input type="date" value={mDate} onChange={e => setMDate(e.target.value)} style={{ ...fieldStyle, width: 130, flexShrink: 0 }} />
+            <input placeholder="Miles" value={mMiles} onChange={e => setMMiles(e.target.value)} onKeyDown={e => e.key === "Enter" && addMile()} type="number" min="0" step="0.1" style={{ ...fieldStyle, width: 80, flexShrink: 0 }} />
+            <input placeholder="Description (optional)" value={mDesc} onChange={e => setMDesc(e.target.value)} onKeyDown={e => e.key === "Enter" && addMile()} style={{ ...fieldStyle, flex: 1, minWidth: 120 }} />
+            <button onClick={addMile} disabled={mBusy || !mMiles} style={{ background: `${PURPLE}0.12)`, border: `1px solid ${PURPLE}0.28)`, borderRadius: 8, color: `${PURPLE}0.9)`, fontSize: 12, fontWeight: 700, padding: "7px 14px", cursor: mBusy ? "not-allowed" : "pointer", flexShrink: 0, opacity: mBusy ? 0.5 : 1 }}>{mBusy ? "…" : "Add"}</button>
+          </div>
+          <div style={{ maxHeight: 600, overflowY: "auto" }}>
+            {mileage.length === 0 && <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>No trips logged yet.</p>}
+            {[...mileage].sort((a, b) => b.date.localeCompare(a.date)).map(entry => (
+              <MileRow key={entry.id} entry={entry} pw={pw} onDelete={id => onMileageChange(mileage.filter(x => x.id !== id))} />
+            ))}
           </div>
         </div>
       )}
