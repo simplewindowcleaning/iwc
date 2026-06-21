@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Check, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { formatDate, formatTime, formatPhone } from "@/lib/availability";
 import { calcPrice } from "@/lib/constants";
@@ -29,7 +29,6 @@ function SummaryContent() {
   const total = calcPrice(windows, minWindows);
 
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
 
   const venmoLink = `venmo://paycharge?txn=pay&recipients=SimpleWindowCleaning&amount=${total}&note=Window+cleaning+${encodeURIComponent(date)}`;
@@ -65,37 +64,17 @@ function SummaryContent() {
       return;
     }
 
-    setDone(true);
+    const { id: bookingId } = await res.json();
     setSubmitting(false);
-  }
 
-  if (done) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 pb-12 pt-24">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="glass-card p-8 text-center"
-          style={{ maxWidth: 360, width: "100%" }}
-        >
-          <div
-            className="mx-auto mb-5 flex items-center justify-center"
-            style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(167,139,250,0.2)", border: "2px solid #a78bfa" }}
-          >
-            <Check size={28} color="#a78bfa" />
-          </div>
-          <h2 style={{ color: "white", fontSize: 20, fontWeight: 700, marginBottom: 8 }}>You&apos;re booked!</h2>
-          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, lineHeight: 1.6, marginBottom: 20 }}>
-            We&apos;ll see you {formatDate(date)} at {formatTime(time)}.<br />
-            {email && "A confirmation is on its way."}
-          </p>
-          <button className="ghost-btn" onClick={() => router.push("/")}>
-            Back to home
-          </button>
-        </motion.div>
-      </div>
-    );
+    const nextParams = new URLSearchParams({
+      firstName,
+      date,
+      time,
+      ...(email ? { email } : {}),
+      ...(phone ? { phone } : {}),
+    });
+    router.push(`/booking/${bookingId}/updates?${nextParams.toString()}`);
   }
 
   return (
