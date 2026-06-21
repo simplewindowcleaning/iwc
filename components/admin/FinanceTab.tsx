@@ -248,6 +248,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
   const [preview, setPreview]       = useState<ParsedRow[] | null>(null);
   const [previewAcct, setPreviewAcct] = useState<1 | 2>(1);
   const [importing, setImporting]   = useState(false);
+  const [finTab, setFinTab] = useState<"overview" | "acct1" | "acct2">("overview");
 
   // Mileage add form state
   const today = new Date().toISOString().slice(0, 10);
@@ -343,8 +344,30 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
     fontSize: 26, fontWeight: 800, color, marginBottom: 12,
   });
 
+  const acct1 = transactions.filter(t => t.source === "upload-acct1" || t.source === "manual");
+  const acct2 = transactions.filter(t => t.source === "upload-acct2");
+
+  const tabBtn = (id: typeof finTab, label: string) => (
+    <button
+      onClick={() => setFinTab(id)}
+      style={{
+        background: finTab === id ? "rgba(126,200,227,0.14)" : "transparent",
+        border: `1px solid ${finTab === id ? "rgba(126,200,227,0.35)" : "rgba(255,255,255,0.1)"}`,
+        borderRadius: 8, color: finTab === id ? "rgba(126,200,227,0.95)" : "rgba(255,255,255,0.4)",
+        fontSize: 11, fontWeight: 700, padding: "6px 14px", cursor: "pointer", fontFamily: "inherit",
+      }}
+    >{label}</button>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* View tabs */}
+      <div style={{ display: "flex", gap: 8 }}>
+        {tabBtn("overview", "Overview")}
+        {tabBtn("acct1", "Account 1")}
+        {tabBtn("acct2", "Account 2")}
+      </div>
 
       {/* YTD summary strip */}
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -421,8 +444,36 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
         </div>
       )}
 
+      {/* Account views */}
+      {(finTab === "acct1" || finTab === "acct2") && (() => {
+        const list = finTab === "acct1" ? acct1 : acct2;
+        const label = finTab === "acct1" ? "Account 1" : "Account 2";
+        const acctIncome  = list.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+        const acctExpense = list.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+        return (
+          <div style={col}>
+            <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+              <div>
+                <div style={{ ...sectionLabel, marginBottom: 3 }}>{label} — In</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: `${TEAL}0.9)` }}>${acctIncome.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+              </div>
+              <div>
+                <div style={{ ...sectionLabel, marginBottom: 3 }}>{label} — Out</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: `${RED}0.85)` }}>${acctExpense.toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+              </div>
+            </div>
+            <div style={{ maxHeight: 500, overflowY: "auto" }}>
+              {list.length === 0 && <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12 }}>No transactions for this account yet.</p>}
+              {list.sort((a, b) => b.date.localeCompare(a.date)).map(t => (
+                <TxRow key={t.id} tx={t} pw={pw} onDelete={id => onTransactionsChange(transactions.filter(x => x.id !== id))} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Income / Expense columns */}
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+      {finTab === "overview" && <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
 
         {/* Income */}
         <div style={col}>
@@ -474,9 +525,10 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
             ))}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Mileage */}
+      {finTab === "overview" &&
       <div style={{ ...col }}>
         <div style={sectionLabel}>Mileage</div>
         <div style={totalStyle(`${PURPLE}0.9)`)}>
@@ -508,7 +560,7 @@ export function FinanceTab({ pw, transactions, mileage, onTransactionsChange, on
             <MileRow key={m.id} entry={m} pw={pw} onDelete={id => onMileageChange(mileage.filter(x => x.id !== id))} />
           ))}
         </div>
-      </div>
+      </div>}
 
     </div>
   );
