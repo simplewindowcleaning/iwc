@@ -91,7 +91,7 @@ function UpdatesContent() {
             {firstName ? `Almost done, ${firstName}!` : "One more thing…"}
           </h1>
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginBottom: 24, lineHeight: 1.5 }}>
-            Where should we send your receipt?
+            {email ? "Confirm your email — change it here if you need to." : "Where should we send your receipt?"}
           </p>
 
           <label style={{ display: "block", color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>
