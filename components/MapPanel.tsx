@@ -407,7 +407,8 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
                 : { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
             }}
             style={{
-              position: "absolute", top: 16, left: 16, zIndex: 10,
+              position: "absolute", top: 16, zIndex: 10,
+              left: stepIdx === 1 && !!area?.alert ? 16 : "10%",
               width: 240, borderRadius: 14,
               border: `1px solid ${TEAL}0.22)`,
               boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
