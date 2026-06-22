@@ -14,7 +14,7 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Simple Windows — Instant Window Cleaning",
   description: "Book window cleaning instantly. Simple, fast, priced per window.",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/icon.jpg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
