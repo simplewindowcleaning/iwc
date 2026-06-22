@@ -51,6 +51,9 @@ export default function HomePage() {
   const [panelVisible, setPanelVisible] = useState(false);
   const [reviewMode, setReviewMode]       = useState(false);
   const [rodeoModal, setRodeoModal] = useState(false);
+  const [contactModal, setContactModal] = useState(false);
+
+  function initiateCheckout() { setContactModal(true); }
 
   function handleGoToReview() {
     setPanelVisible(false);
@@ -222,7 +225,7 @@ export default function HomePage() {
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "rgba(255,255,255,0.4)"; }}
                 >← Edit</button>
                 <button
-                  onClick={goToSummary}
+                  onClick={initiateCheckout}
                   style={{
                     flex: 1, background: "rgba(126,200,227,0.16)",
                     border: "1px solid rgba(126,200,227,0.42)",
@@ -307,7 +310,7 @@ export default function HomePage() {
                   ← Go back
                 </button>
                 <button
-                  onClick={() => { setRodeoModal(false); }}
+                  onClick={() => { setRodeoModal(false); initiateCheckout(); }}
                   style={{
                     background: "rgba(126,200,227,0.16)",
                     border: "1px solid rgba(126,200,227,0.42)",
@@ -320,6 +323,133 @@ export default function HomePage() {
                   onMouseLeave={e => e.currentTarget.style.background = "rgba(126,200,227,0.16)"}
                 >
                   Got it — continue →
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Contact capture modal ── */}
+      <AnimatePresence>
+        {contactModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 100,
+              background: "rgba(5,5,8,0.72)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "0 20px",
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 32, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.97 }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: "min(520px, 100%)",
+                background: "rgba(8,8,18,0.97)",
+                backdropFilter: "blur(28px)",
+                WebkitBackdropFilter: "blur(28px)",
+                border: "1px solid rgba(126,200,227,0.18)",
+                borderRadius: 22,
+                padding: "36px 36px 32px",
+                boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
+              }}
+            >
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(126,200,227,0.45)", marginBottom: 12 }}>
+                Almost there
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.15 }}>
+                How should we reach you?
+              </div>
+              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 24 }}>
+                We need a way to notify you about dispatch.
+              </p>
+
+              {/* Email */}
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Email address"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(126,200,227,0.22)",
+                  borderRadius: 12, color: "white",
+                  fontSize: 15, padding: "13px 16px",
+                  fontFamily: "inherit", outline: "none",
+                  marginBottom: 12,
+                }}
+              />
+
+              {/* Phone */}
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="Mobile number"
+                style={{
+                  width: "100%", boxSizing: "border-box",
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  borderRadius: 12, color: "white",
+                  fontSize: 15, padding: "13px 16px",
+                  fontFamily: "inherit", outline: "none",
+                  marginBottom: 20,
+                }}
+              />
+
+              {/* Text benefits */}
+              <div style={{ marginBottom: 28 }}>
+                {[
+                  "Know who's en route and what vehicle before they arrive",
+                  "Arrival and job-complete notifications",
+                  "Recurring visit scheduling — one text away",
+                ].map(item => (
+                  <div key={item} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 8 }}>
+                    <span style={{ color: "rgba(126,200,227,0.6)", fontSize: 13, marginTop: 1, flexShrink: 0 }}>✓</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.48)", lineHeight: 1.5 }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+                <button
+                  onClick={() => setContactModal(false)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 12, color: "rgba(255,255,255,0.35)",
+                    fontSize: 13, fontWeight: 600, padding: "12px 20px",
+                    cursor: "pointer", fontFamily: "inherit",
+                  }}
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={() => { setContactModal(false); goToSummary(); }}
+                  disabled={!email.trim()}
+                  style={{
+                    background: email.trim() ? "rgba(126,200,227,0.16)" : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${email.trim() ? "rgba(126,200,227,0.42)" : "rgba(255,255,255,0.08)"}`,
+                    borderRadius: 12,
+                    color: email.trim() ? "rgba(126,200,227,0.95)" : "rgba(255,255,255,0.2)",
+                    fontSize: 13, fontWeight: 700, padding: "12px 24px",
+                    cursor: email.trim() ? "pointer" : "not-allowed",
+                    fontFamily: "inherit", letterSpacing: "0.04em",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  Continue to checkout →
                 </button>
               </div>
             </motion.div>
@@ -358,7 +488,7 @@ export default function HomePage() {
           goTrigger={goTrigger}
           onGo={() => setGoTrigger(t => t + 1)}
           onStepChange={setActiveStep}
-          onGoToSummary={goToSummary}
+          onGoToSummary={initiateCheckout}
           onBeforeCheckout={() => setRodeoModal(true)}
         />
       </div>
