@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import twilio from "twilio";
 
 export async function POST(req: NextRequest) {
-  const { phone, first_name, address } = await req.json();
+  const { phone, first_name, address, type } = await req.json();
   if (!phone) return NextResponse.json({ error: "phone required" }, { status: 400 });
 
   const sid   = process.env.TWILIO_ACCOUNT_SID;
@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
   if (!e164) return NextResponse.json({ error: "invalid phone" }, { status: 400 });
 
   const name = first_name ? `, ${first_name}` : "";
-  const body = `Hi${name}! Your Simple Windows crew is on the way to ${address}. See you shortly! — Simple Windows`;
+  const body = type === "arrival"
+    ? `Hi${name}! Your Simple Windows crew has arrived and is starting on your windows now. — Simple Windows`
+    : `Hi${name}! Your Simple Windows crew is on the way to ${address}. See you shortly! — Simple Windows`;
 
   try {
     const client = twilio(sid, token);
