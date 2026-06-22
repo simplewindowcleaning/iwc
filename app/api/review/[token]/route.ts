@@ -10,7 +10,7 @@ export async function GET(
     const { data, error } = await db
       .from("gig_completions")
       .select(`
-        worker_notes, customer_review_text, customer_stars, review_submitted_at,
+        worker_notes, customer_review_text, customer_stars, review_submitted_at, review_status,
         bookings ( first_name, service_date )
       `)
       .eq("review_token", params.token)
