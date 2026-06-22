@@ -57,8 +57,7 @@ function SummaryContent() {
     });
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error(err);
+      await res.json().catch(() => ({}));
       setError("Couldn't save booking. Please try again or text us directly.");
       setSubmitting(false);
       return;

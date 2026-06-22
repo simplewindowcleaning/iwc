@@ -40,17 +40,7 @@ export async function POST(req: NextRequest) {
     status: status ?? "pending",
   };
 
-  let { data, error } = await db.from("bookings").insert(insertPayload).select("id").single();
-
-  // Schema cache sometimes lags on email — retry without it if needed
-  if (error?.message?.includes("email")) {
-    const { email: _email, ...withoutEmail } = insertPayload;
-    ({ data, error } = await db.from("bookings").insert(withoutEmail).select("id").single());
-    // Patch email in separately once the row exists
-    if (!error && data?.id && email?.trim()) {
-      await db.from("bookings").update({ email: email.trim() }).eq("id", data.id);
-    }
-  }
+  const { data, error } = await db.from("bookings").insert(insertPayload).select("id").single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ id: data?.id, ok: true });

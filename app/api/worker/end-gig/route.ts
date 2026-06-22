@@ -37,15 +37,6 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Twilio stub — replace with real SMS when TWILIO_* env vars are live
-    if (booking?.phone) {
-      console.log(
-        `[TWILIO STUB] → ${booking.phone}: ` +
-        `"Hi ${booking.first_name ?? "there"}! Your windows look great. ` +
-        `Leave us a quick review: ${review_url}"`
-      );
-    }
-
     return NextResponse.json({ review_token, review_url });
   } catch {
     return NextResponse.json({ error: "Server error" }, { status: 500 });
