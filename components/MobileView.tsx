@@ -349,7 +349,7 @@ export function MobileView(props: Props) {
                   style={{
                     position: "absolute",
                     bottom: "calc(44dvh + 12px)",
-                    left: "50%", transform: "translateX(-50%)",
+                    left: 0, right: 0, margin: "0 auto",
                     zIndex: 22,
                     width: "min(300px, 88vw)",
                     background: "rgba(5,5,8,0.9)",
