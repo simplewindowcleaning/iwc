@@ -730,11 +730,7 @@ export default function AdminPage() {
                 {promoCodes.length === 0 && (
                   <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 12, paddingLeft: 4 }}>No promo codes yet.</p>
                 )}
-                {promoCodes.map(pc => {
-                  const discountLabel = pc.discount_type === "percent" ? `-${pc.discount_value}%`
-                    : pc.discount_type === "flat" ? `-$${pc.discount_value}`
-                    : `$${pc.discount_value}/window`;
-                  return (
+                {promoCodes.map(pc => (
                   <div key={pc.code} style={{
                     background: "rgba(255,255,255,0.03)", border: `1px solid ${pc.active ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.03)"}`,
                     borderRadius: 10, padding: "12px 16px", marginBottom: 6,
@@ -745,7 +741,7 @@ export default function AdminPage() {
                       {pc.code}
                     </span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: "#86efac", minWidth: 90 }}>
-                      {discountLabel}
+                      {pc.discount_type === "percent" ? `-${pc.discount_value}%` : pc.discount_type === "flat" ? `-$${pc.discount_value}` : `$${pc.discount_value}/window`}
                     </span>
                     <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", flex: 1 }}>
                       {pc.notes || ""}
