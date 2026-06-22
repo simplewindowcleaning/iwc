@@ -48,9 +48,13 @@ export default function SMSConsentPage() {
           </p>
         </section>
 
-        <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11 }}>
+        <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>
           Last updated: June 2026
         </p>
+        <div style={{ display: "flex", gap: 20 }}>
+          <a href="/privacy" style={{ color: "rgba(126,200,227,0.5)", fontSize: 12 }}>Privacy Policy</a>
+          <a href="/terms" style={{ color: "rgba(126,200,227,0.5)", fontSize: 12 }}>Terms of Service</a>
+        </div>
       </div>
     </div>
   );
