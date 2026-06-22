@@ -187,8 +187,8 @@ export default function ReviewPage() {
           </div>
         )}
 
-        {/* Post to Google — only active after admin approval */}
-        {isApproved ? (
+        {/* Post to Google — available immediately after submission */}
+        {submitted && (
           <div>
             <button
               onClick={handlePostToGoogle}
@@ -200,7 +200,7 @@ export default function ReviewPage() {
                 letterSpacing: "0.04em",
               }}
             >
-              {copied ? "✓ Text copied — just paste on Google!" : "Post to Google ↗"}
+              {copied ? "✓ Text copied — just paste on Google!" : "Share on Google ↗"}
             </button>
             {copied && (
               <p style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 6 }}>
@@ -208,11 +208,7 @@ export default function ReviewPage() {
               </p>
             )}
           </div>
-        ) : submitted ? (
-          <p style={{ textAlign: "center", fontSize: 10, color: "rgba(255,255,255,0.25)", marginTop: 8 }}>
-            A Google posting link will be available here after review.
-          </p>
-        ) : null}
+        )}
 
       </div>
     </div>
