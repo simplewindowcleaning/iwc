@@ -50,7 +50,8 @@ export default function WorkerPage() {
   const [submitting, setSubmitting] = useState(false);
   const [flagging, setFlagging] = useState<string | null>(null);
   const [reviewLinks, setReviewLinks] = useState<Record<string, string>>({});
-  const [copied, setCopied]   = useState<string | null>(null);
+  const [copied, setCopied]     = useState<string | null>(null);
+  const [notifying, setNotifying] = useState<string | null>(null);
 
   // New Gig form
   const [showNewGig, setShowNewGig] = useState(false);
@@ -157,6 +158,23 @@ export default function WorkerPage() {
       await loadJobs(pw);
     }
     setSubmitting(false);
+  }
+
+  function navigate(address: string) {
+    window.open(`https://maps.google.com/maps?daddr=${encodeURIComponent(address)}`, "_blank");
+  }
+
+  async function handleNotify(job: Booking, withNav: boolean) {
+    setNotifying(job.id);
+    if (withNav) navigate(job.address ?? "");
+    if (job.phone) {
+      await fetch("/api/worker/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: job.phone, first_name: job.first_name, address: job.address }),
+      });
+    }
+    setNotifying(null);
   }
 
   function copyLink(url: string, id: string) {
@@ -375,6 +393,25 @@ export default function WorkerPage() {
                     Cancel
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Navigate buttons */}
+            {!reviewUrl && job.address && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                <button
+                  onClick={() => handleNotify(job, true)}
+                  disabled={notifying === job.id}
+                  style={{ ...btnFillStyle("rgba(126,200,227,0.85)"), fontSize: 11, padding: "7px 14px", opacity: notifying === job.id ? 0.5 : 1 }}
+                >
+                  {notifying === job.id ? "Sending…" : "Navigate + Notify"}
+                </button>
+                <button
+                  onClick={() => navigate(job.address ?? "")}
+                  style={{ ...btnStyle("rgba(126,200,227,0.4)"), fontSize: 11 }}
+                >
+                  Nav w/o SMS
+                </button>
               </div>
             )}
 
