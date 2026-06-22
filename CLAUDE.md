@@ -49,7 +49,14 @@ No `vercel alias set` needed anymore — domains are in Vercel project settings,
 
 ## Supabase
 **Project:** `ujorfgfilmbwgkecpdck.supabase.co`
+**URL:** `https://ujorfgfilmbwgkecpdck.supabase.co`
+**Anon key (public):** `sb_publishable_rVJvhKm5hbLZ8Dz8SIZs4g_WATm9bTy`
 **Client:** `lib/supabase.ts` — use `getServiceClient()` for server-side (bypasses RLS), `getPublicClient()` for client-side
+
+**CLI link:**
+```bash
+supabase link --project-ref ujorfgfilmbwgkecpdck
+```
 
 **If schema cache errors appear** ("cannot find column X in schema cache"):
 Run in Supabase SQL editor: `SELECT pg_notify('pgrst', 'reload schema');`
