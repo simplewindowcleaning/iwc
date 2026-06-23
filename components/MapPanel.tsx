@@ -165,6 +165,7 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
     "Text alerts before arrival, at start, and when we're done",
     "Affordable recurring service built for everyday families",
     "25 years of professional window cleaning experience",
+    "100% cashless · 100% of tips go directly to your technician",
   ];
   useEffect(() => {
     if (!videoTriggered || stepIdx > 1) return;
@@ -378,7 +379,7 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
 
       {/* Slideshow — top-center at coverage-alert level */}
       <AnimatePresence>
-        {(stepIdx >= 3 || showSlideshow) && !slideshowClosed && (
+        {(stepIdx >= 5 || showSlideshow) && !slideshowClosed && (
           <div key="slideshow-wrap" style={{
             position: "absolute", top: 54, left: "50%", transform: "translateX(-50%)",
             width: "min(342px, 65%)", zIndex: 9, pointerEvents: "auto",

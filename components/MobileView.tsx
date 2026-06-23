@@ -24,6 +24,8 @@ const PILLS = [
   "25 yrs exp",
   "Badged staff",
   "Text updates",
+  "100% cashless",
+  "Tips to tech",
 ];
 
 interface Props {
