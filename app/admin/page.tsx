@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { adminHeader } from "@/lib/admin";
 import { formatDateFull, formatTime } from "@/lib/availability";
 import type { Booking, BlockedSlot } from "@/app/admin/types";
+import { AdminChatWidget } from "@/components/AdminChatWidget";
 
 const SESSION_KEY = "iwc_admin";
 const PW_KEY = "iwc_admin_pw";
@@ -1003,6 +1004,8 @@ export default function AdminPage() {
 
         </motion.div>
       </AnimatePresence>
+
+      {loggedIn && <AdminChatWidget password={pw} />}
     </div>
   );
 }

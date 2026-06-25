@@ -117,18 +117,32 @@ function ThermometerChart({ avg, retailRate }: { avg: number; retailRate: number
   const posH    = `${(pos * 100).toFixed(2)}%`;
   const fillClr = pos < 0.15 ? "#16a34a" : pos < 0.35 ? "#65a30d" : pos < 0.6 ? "#ca8a04" : "#581c87";
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 28, flexShrink: 0, gap: 3 }}>
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center",
+      width: 68, flexShrink: 0, padding: "8px 8px",
+      border: "1px solid #c4a870", borderRadius: 3, background: "#e8e0c8",
+      gap: 3,
+    }}>
       <span style={{ fontSize: 6, color: "#9a4040", fontFamily: "'Courier New',monospace", letterSpacing: "0.05em" }}>$20</span>
-      <div style={{ flex: 1, width: 14, minHeight: 90, position: "relative" }}>
-        {/* bordered tube */}
-        <div style={{ position: "absolute", inset: 0, border: "1px solid #c4a870", borderRadius: 7, overflow: "hidden", background: "rgba(180,40,40,0.05)" }}>
+      <div style={{ flex: 1, width: "100%", minHeight: 100, position: "relative" }}>
+        {/* tube — left-aligned inside box */}
+        <div style={{ position: "absolute", left: 4, top: 0, bottom: 0, width: 14, border: "1px solid #c4a870", borderRadius: 7, overflow: "hidden", background: "rgba(180,40,40,0.05)" }}>
           {[0.25, 0.5, 0.75].map(t => (
             <div key={t} style={{ position: "absolute", bottom: `${t * 100}%`, left: 0, right: 0, height: 1, background: "rgba(180,140,80,0.3)" }} />
           ))}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: posH, background: fillClr, transition: "height 0.7s cubic-bezier(0.34,1.56,0.64,1)" }} />
         </div>
-        {/* marker extends outside tube */}
-        <div style={{ position: "absolute", bottom: posH, left: -4, right: -4, height: 2, background: "#1a1208", zIndex: 4 }} />
+        {/* avg price label rides with the marker */}
+        <div style={{
+          position: "absolute", bottom: posH, left: 22,
+          transform: "translateY(50%)",
+          zIndex: 5, lineHeight: 1,
+        }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", whiteSpace: "nowrap" }}>
+            ${avg.toFixed(2)}
+          </span>
+          <span style={{ fontSize: 6, color: "#5a7a4a", fontFamily: "'Courier New',monospace", marginLeft: 2 }}>/win</span>
+        </div>
       </div>
       <span style={{ fontSize: 6, color: "#2a6a2a", fontFamily: "'Courier New',monospace" }}>$0</span>
     </div>
@@ -252,19 +266,20 @@ export default function JobCloseout() {
   const fullPriceAdds   = Math.max(0, onsiteAdded - discountedAdds);
   const screenTotal     = screenCount * SCREEN_RATE;
   const screenCredit    = tookScreenLesson ? screenCount * SCREEN_LESSON_CREDIT : 0;
-  const totalCharged    = baseTotal + discountedAdds * ONSITE_RATE + fullPriceAdds * RETAIL_RATE + screenTotal;
+  const totalCharged    = discountedAdds * ONSITE_RATE + fullPriceAdds * RETAIL_RATE + screenTotal;
   const promoDiscount   = appliedPromo
     ? appliedPromo.discount_type === "percent"
       ? totalCharged * (appliedPromo.discount_value / 100)
       : Math.min(appliedPromo.discount_value, totalCharged)
     : 0;
   const adjustedTotal   = totalCharged - promoDiscount;
+  const totalRevenue    = baseTotal + adjustedTotal;
   const totalWindows = baseWindows + onsiteAdded + freeGiven;
-  const avg          = totalWindows > 0 ? adjustedTotal / totalWindows : 0;
+  const avg          = totalWindows > 0 ? totalRevenue / totalWindows : 0;
   const retailFull   = totalWindows * RETAIL_RATE;
   const nextPrice        = onsiteAdded * avg;
   const nextVisitGross   = totalWindows * avg;
-  const firstOrderCredit = baseTotal;
+  const firstOrderCredit = baseWindows * avg;
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -684,13 +699,13 @@ export default function JobCloseout() {
                         { label: "ORIGINAL", value: `$${fmtD(totalCharged)}` },
                         { label: "PROMO OFF", value: `-$${fmtD(promoDiscount)}` },
                         { label: "FINAL",    value: `$${fmtD(adjustedTotal)}` },
-                        { label: "SAVINGS",  value: `$${fmtD(retailFull - adjustedTotal)}` },
+                        { label: "SAVINGS",  value: `$${fmtD(retailFull - totalRevenue)}` },
                       ] : [
                         { label: "WINDOWS", value: String(totalWindows) },
                         { label: "CHARGED", value: `$${fmtD(adjustedTotal)}` },
                         { label: "AVG/WIN", value: `$${fmtD(avg)}` },
                         { label: "RETAIL",  value: `$${fmtI(retailFull)}` },
-                        { label: "SAVINGS", value: `$${fmtD(retailFull - adjustedTotal)}` },
+                        { label: "SAVINGS", value: `$${fmtD(retailFull - totalRevenue)}` },
                       ]).map(({ label, value }) => (
                         <div key={label} style={{ textAlign: "center" }}>
                           <div style={{ fontSize: 6, color: "#4a7a58", letterSpacing: "0.12em", marginBottom: 3, fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>{label}</div>
@@ -743,12 +758,18 @@ export default function JobCloseout() {
                 <div style={{ fontSize: 7, letterSpacing: "0.22em", color: "#7a5e30", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #d4b880" }}>
                   Service Summary
                 </div>
-                {[
-                  { label: "WINDOWS ORDERED", value: `${baseWindows} exterior` },
-                  ...(onsiteAdded > 0 ? [{ label: "ADDED ON-SITE", value: fullPriceAdds > 0 ? `${discountedAdds} at $${ONSITE_RATE} · ${fullPriceAdds} at $${RETAIL_RATE}` : `${onsiteAdded} at $${ONSITE_RATE} each` }] : []),
-                ].map(({ label, value }) => (
-                  <SummaryRow key={label} label={label} value={value} />
-                ))}
+                <SummaryRow label="WINDOWS ORDERED" value={`${baseWindows} exterior`} />
+                <div style={{ paddingLeft: 4, paddingBottom: 4, borderBottom: "1px solid rgba(196,168,112,0.2)", marginBottom: 1 }}>
+                  <span style={{ fontSize: 8, color: "#7a5e30", fontFamily: "'Courier New',monospace", fontStyle: "italic", letterSpacing: "0.06em" }}>
+                    Prepaid online · ${fmtD(baseTotal)}
+                  </span>
+                </div>
+                {onsiteAdded > 0 && (
+                  <SummaryRow
+                    label="ADDED ON-SITE"
+                    value={fullPriceAdds > 0 ? `${discountedAdds} at $${ONSITE_RATE} · ${fullPriceAdds} at $${RETAIL_RATE}` : `${onsiteAdded} at $${ONSITE_RATE} each`}
+                  />
+                )}
 
                 {/* Complimentary — inline mini tally */}
                 <div style={{ padding: "5px 0", borderBottom: "1px solid rgba(196,168,112,0.3)" }}>
@@ -792,7 +813,7 @@ export default function JobCloseout() {
                   { label: "TOTAL CHARGED",  value: `$${fmtD(adjustedTotal)}`, underline: true },
                   { label: "AVG / WINDOW",   value: `$${fmtD(avg)}` },
                   { label: "RETAIL VALUE",   value: `$${fmtI(retailFull)}` },
-                  ...(retailFull > adjustedTotal ? [{ label: "YOUR SAVINGS", value: `$${fmtD(retailFull - adjustedTotal)}`, valueColor: "#16a34a" }] : []),
+                  ...(retailFull > totalRevenue ? [{ label: "YOUR SAVINGS", value: `$${fmtD(retailFull - totalRevenue)}`, valueColor: "#16a34a" }] : []),
                 ] as Array<{ label: string; value: string; underline?: boolean; valueColor?: string }>).map(({ label, value, underline, valueColor }) => (
                   <SummaryRow key={label} label={label} value={value} underline={underline} valueColor={valueColor} />
                 )))}
@@ -811,30 +832,17 @@ export default function JobCloseout() {
                 </div>
 
                 {/* Slide body */}
-                <div style={{ padding: "10px 12px", background: "#f0ead4", display: "flex", gap: 12, alignItems: "stretch" }}>
-                  {/* Thermometer */}
+                <div style={{ padding: "10px 12px", background: "#f0ead4", display: "flex", gap: 10, alignItems: "stretch" }}>
+                  {/* Thermometer box */}
                   <ThermometerChart avg={avg} retailRate={RETAIL_RATE} />
 
-                  {/* Content */}
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-                    {/* Rate headline */}
-                    <div>
-                      <div style={{ fontSize: 6, color: "#9a7a48", letterSpacing: "0.22em", textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 1 }}>
-                        {canShowOffer ? "YOUR EFFECTIVE RATE" : "TODAY'S RATE"}
-                      </div>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                        <span style={{ fontSize: 28, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
-                          ${fmtD(avg)}
-                        </span>
-                        <span style={{ fontSize: 9, color: "#5a7a4a", fontFamily: "'Courier New',monospace" }}>/WIN</span>
-                      </div>
-                      <div style={{ fontSize: 7, color: "#9a4040", fontFamily: "'Courier New',monospace", marginTop: 2, letterSpacing: "0.06em" }}>
-                        vs <span style={{ textDecoration: "line-through" }}>${RETAIL_RATE}</span> retail
-                        {delta > 0 && <span style={{ color: "#16a34a", fontWeight: 700 }}> · {delta}% BELOW</span>}
-                      </div>
+                  {/* Content box */}
+                  <div style={{ flex: 1, border: "1px solid #c4a870", borderRadius: 3, background: "#e8e0c8", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 0 }}>
+                    {/* vs retail header */}
+                    <div style={{ fontSize: 7, color: "#9a4040", fontFamily: "'Courier New',monospace", letterSpacing: "0.06em", paddingBottom: 5, marginBottom: 4, borderBottom: "1px solid rgba(196,168,112,0.4)" }}>
+                      vs <span style={{ textDecoration: "line-through" }}>${RETAIL_RATE}</span> retail
+                      {delta > 0 && <span style={{ color: "#16a34a", fontWeight: 700 }}> · {delta}% BELOW</span>}
                     </div>
-
-                    <div style={{ height: 1, background: "#c4a870" }} />
 
                     {canShowOffer ? (
                       depositRequired ? (
