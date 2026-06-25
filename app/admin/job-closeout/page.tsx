@@ -257,6 +257,9 @@ export default function JobCloseout() {
   const nextVisitOffer   = onsiteAdded === 0
     ? Math.max(20, baseTotal - 2)
     : Math.max(20, nextVisitRetail - 2 - freeGiven * RETAIL_RATE - addPromoCredit);
+  // Thermometer feeds — read-only from the offer math
+  const arrivalAvg           = originalVisitWindows > 0 ? baseTotal / originalVisitWindows : 0;
+  const nextVisitEffectiveAvg = nextVisitWindows > 0 ? nextVisitOffer / nextVisitWindows : 0;
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -892,9 +895,12 @@ export default function JobCloseout() {
                 </div>
 
                 {/* Slide body */}
-                <div style={{ padding: "10px 12px", background: "#F0F9FC" }}>
-                  {/* Content box — thermometers removed, re-inserted after math is finalised */}
-                  <div style={{ border: "1px solid #B8DCE8", borderRadius: 6, background: "#FFFFFF", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 0 }}>
+                <div style={{ padding: "10px 12px", background: "#F0F9FC", display: "flex", gap: 8, alignItems: "stretch" }}>
+                  {/* Left thermometer — arrival avg, frozen teal at step 2 */}
+                  <ThermometerChart avg={arrivalAvg} retailRate={RETAIL_RATE} tag="TODAY" frozen={isComplete} />
+
+                  {/* Content box */}
+                  <div style={{ flex: 1, border: "1px solid #B8DCE8", borderRadius: 6, background: "#FFFFFF", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 0 }}>
                     {/* vs retail header */}
                     <div style={{ fontSize: 7, color: "#1278A0", letterSpacing: "0.06em", paddingBottom: 5, marginBottom: 4, borderBottom: "1px solid #EBF5FA" }}>
                       vs <span style={{ textDecoration: "line-through", color: "#B0C8D4" }}>${RETAIL_RATE}</span> retail
@@ -1066,6 +1072,10 @@ export default function JobCloseout() {
                 )}
               </div>
 
+              {/* Right thermometer — next-visit effective avg, appears when adds > 0 */}
+              {onsiteAdded > 0 && (
+                <ThermometerChart avg={nextVisitEffectiveAvg} retailRate={RETAIL_RATE} tag="NEXT" />
+              )}
             </div>
 
             {/* ── Sign-Off Row ── */}
