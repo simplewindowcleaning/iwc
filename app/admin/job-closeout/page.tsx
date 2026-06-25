@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { Booking } from "@/app/admin/types";
 import { techDisplayName, PRICE_PER_WINDOW, PRICE_PER_WINDOW_EXTRA } from "@/lib/constants";
@@ -11,8 +11,6 @@ const ONSITE_RATE          = 12.50;
 const ONSITE_WINDOW_CAP    = 40;
 const DEPOSIT              = 10;
 const RETAIL_RATE          = 20;
-const INT_DISCOUNT         = 0.90;
-const BOGO_RATE            = 0.50;
 const SCREEN_RATE          = 2;
 const SCREEN_LESSON_CREDIT = 1;
 
@@ -93,7 +91,8 @@ function Stat({ label, value, color = "white" }: { label: string; value: string;
 function WorkerBar({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      background: "#0d0d1c", borderBottom: "1px solid rgba(255,255,255,0.07)",
+      background: "linear-gradient(90deg, #061C2E 0%, #0A2F48 100%)",
+      borderBottom: "1px solid rgba(58,170,196,0.18)",
       padding: "14px 32px", display: "flex", alignItems: "center", gap: 28, flexWrap: "wrap",
     }}>
       {children}
@@ -104,7 +103,8 @@ function WorkerBar({ children }: { children: React.ReactNode }) {
 function ConfirmBar({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      background: "#0d0d1c", borderTop: "1px solid rgba(255,255,255,0.07)",
+      background: "linear-gradient(90deg, #061C2E 0%, #0A2F48 100%)",
+      borderTop: "1px solid rgba(58,170,196,0.18)",
       padding: "22px 32px",
     }}>
       <div style={{ maxWidth: 780, margin: "0 auto" }}>{children}</div>
@@ -115,36 +115,34 @@ function ConfirmBar({ children }: { children: React.ReactNode }) {
 function ThermometerChart({ avg, retailRate }: { avg: number; retailRate: number }) {
   const pos     = Math.min(1, Math.max(0, (avg / retailRate) ** 3));
   const posH    = `${(pos * 100).toFixed(2)}%`;
-  const fillClr = pos < 0.15 ? "#16a34a" : pos < 0.35 ? "#65a30d" : pos < 0.6 ? "#ca8a04" : "#581c87";
+  const fillClr = pos < 0.15 ? "#059669" : pos < 0.35 ? "#0D9488" : pos < 0.6 ? "#1278A0" : "#0A3D5C";
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
       width: 68, flexShrink: 0, padding: "8px 8px",
-      border: "1px solid #c4a870", borderRadius: 3, background: "#e8e0c8",
+      border: "1px solid #A8D8E8", borderRadius: 6, background: "linear-gradient(180deg,#EBF7FA 0%,#D8F0F8 100%)",
       gap: 3,
     }}>
-      <span style={{ fontSize: 6, color: "#9a4040", fontFamily: "'Courier New',monospace", letterSpacing: "0.05em" }}>$20</span>
+      <span style={{ fontSize: 6, color: "#0A3D5C", fontFamily: "'Courier New',monospace", letterSpacing: "0.05em", opacity: 0.5 }}>$20</span>
       <div style={{ flex: 1, width: "100%", minHeight: 100, position: "relative" }}>
-        {/* tube — left-aligned inside box */}
-        <div style={{ position: "absolute", left: 4, top: 0, bottom: 0, width: 14, border: "1px solid #c4a870", borderRadius: 7, overflow: "hidden", background: "rgba(180,40,40,0.05)" }}>
+        <div style={{ position: "absolute", left: 4, top: 0, bottom: 0, width: 14, border: "1px solid #7ECAD8", borderRadius: 7, overflow: "hidden", background: "rgba(10,61,92,0.04)" }}>
           {[0.25, 0.5, 0.75].map(t => (
-            <div key={t} style={{ position: "absolute", bottom: `${t * 100}%`, left: 0, right: 0, height: 1, background: "rgba(180,140,80,0.3)" }} />
+            <div key={t} style={{ position: "absolute", bottom: `${t * 100}%`, left: 0, right: 0, height: 1, background: "rgba(18,120,160,0.2)" }} />
           ))}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: posH, background: fillClr, transition: "height 0.7s cubic-bezier(0.34,1.56,0.64,1)" }} />
         </div>
-        {/* avg price label rides with the marker */}
         <div style={{
           position: "absolute", bottom: posH, left: 22,
           transform: "translateY(50%)",
           zIndex: 5, lineHeight: 1,
         }}>
-          <span style={{ fontSize: 14, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", whiteSpace: "nowrap" }}>
+          <span style={{ fontSize: 14, fontWeight: 900, color: "#0A2740", fontFamily: "Georgia,'Times New Roman',serif", whiteSpace: "nowrap" }}>
             ${avg.toFixed(2)}
           </span>
-          <span style={{ fontSize: 6, color: "#5a7a4a", fontFamily: "'Courier New',monospace", marginLeft: 2 }}>/win</span>
+          <span style={{ fontSize: 6, color: "#1278A0", fontFamily: "'Courier New',monospace", marginLeft: 2 }}>/win</span>
         </div>
       </div>
-      <span style={{ fontSize: 6, color: "#2a6a2a", fontFamily: "'Courier New',monospace" }}>$0</span>
+      <span style={{ fontSize: 6, color: "#059669", fontFamily: "'Courier New',monospace", opacity: 0.7 }}>$0</span>
     </div>
   );
 }
@@ -203,7 +201,9 @@ export default function JobCloseout() {
 
   const [onsiteAdded, setOnsiteAdded]               = useState(0);
   const [freeGiven, setFreeGiven]                   = useState(0);
-  const [remainingInteriors, setRemainingInteriors] = useState(0);
+  const [interiorsEnabled, setInteriorsEnabled]     = useState(false);
+  const [interiorsAdded, setInteriorsAdded]         = useState(0);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [screenHandlingEnabled, setScreenHandlingEnabled] = useState(false);
   const [screenCount, setScreenCount]                     = useState(0);
   const [tookScreenLesson, setTookScreenLesson]           = useState(false);
@@ -211,6 +211,24 @@ export default function JobCloseout() {
   const [depositCollected, setDepositCollected]     = useState(false);
   const [interiorDecision, setInteriorDecision]     = useState<InteriorDecision>(null);
   const [saving, setSaving]                         = useState(false);
+
+  // ── Beach video banner ──
+  const videoRef                    = useRef<HTMLVideoElement>(null);
+  const [videoY, setVideoY]         = useState(-100);
+  const [videoTx, setVideoTx]       = useState("none");
+  const [videoMuted, setVideoMuted] = useState(true);
+
+  function startVideoSlide() {
+    setVideoTx("none");
+    setVideoY(-100);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      setVideoTx("transform 10s linear");
+      setVideoY(0);
+      videoRef.current?.play().catch(() => {});
+    }));
+  }
+
+  useEffect(() => { if (step === 1) startVideoSlide(); }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   type PromoCode = { code: string; notes: string | null; discount_type: string; discount_value: number; active: boolean };
   const [showPromoPanel, setShowPromoPanel] = useState(false);
@@ -232,6 +250,8 @@ export default function JobCloseout() {
     setScreenHandlingEnabled(false);
     setScreenCount(0);
     setTookScreenLesson(false);
+    setInteriorsEnabled(false);
+    setInteriorsAdded(0);
   }, [selectedId, bookings]);
 
   useEffect(() => {
@@ -266,7 +286,8 @@ export default function JobCloseout() {
   const fullPriceAdds   = Math.max(0, onsiteAdded - discountedAdds);
   const screenTotal     = screenCount * SCREEN_RATE;
   const screenCredit    = tookScreenLesson ? screenCount * SCREEN_LESSON_CREDIT : 0;
-  const totalCharged    = discountedAdds * ONSITE_RATE + fullPriceAdds * RETAIL_RATE + screenTotal;
+  const interiorTotal   = interiorsAdded * ONSITE_RATE;
+  const totalCharged    = discountedAdds * ONSITE_RATE + fullPriceAdds * RETAIL_RATE + screenTotal + interiorTotal;
   const promoDiscount   = appliedPromo
     ? appliedPromo.discount_type === "percent"
       ? totalCharged * (appliedPromo.discount_value / 100)
@@ -274,7 +295,7 @@ export default function JobCloseout() {
     : 0;
   const adjustedTotal   = totalCharged - promoDiscount;
   const totalRevenue    = baseTotal + adjustedTotal;
-  const totalWindows = baseWindows + onsiteAdded + freeGiven;
+  const totalWindows = baseWindows + onsiteAdded + freeGiven + interiorsAdded;
   const avg          = totalWindows > 0 ? totalRevenue / totalWindows : 0;
   const retailFull   = totalWindows * RETAIL_RATE;
   const nextPrice        = onsiteAdded * avg;
@@ -296,11 +317,6 @@ export default function JobCloseout() {
     if (found) { setAppliedPromo(found); setShowPromoPanel(false); setPromoInput(""); }
   };
   const balanceDue   = Math.max(0, nextVisitGross - firstOrderCredit - DEPOSIT);
-  const interiorTotal  = remainingInteriors * avg * INT_DISCOUNT;
-  const interiorBogo   = interiorTotal * BOGO_RATE;
-  const fullHouseNext  = nextPrice + interiorBogo;
-  const fullHouseRetail = (totalWindows + remainingInteriors) * RETAIL_RATE;
-
   const saveAndAdvance = useCallback(async (decision: InteriorDecision) => {
     setSaving(true);
     try {
@@ -321,8 +337,8 @@ export default function JobCloseout() {
           recurring_accepted:   recurringAccepted,
           deposit_collected:    depositCollected,
           interior_decision:    decision,
-          interior_windows:     remainingInteriors || null,
-          interior_total:       decision === "today" ? Math.round(interiorTotal * 100) / 100 : null,
+          interior_windows:     interiorsAdded || null,
+          interior_total:       interiorsAdded > 0 ? Math.round(interiorTotal * 100) / 100 : null,
           screen_count:         screenCount || null,
           screen_total:         screenTotal || null,
           took_screen_lesson:   tookScreenLesson || null,
@@ -339,7 +355,7 @@ export default function JobCloseout() {
   }, [
     password, selectedId, baseWindows, baseTotal, onsiteAdded, freeGiven,
     totalWindows, totalCharged, avg, recurringAccepted, depositCollected,
-    remainingInteriors, interiorTotal,
+    interiorsAdded, interiorTotal,
     screenCount, screenTotal, tookScreenLesson, screenCredit,
   ]);
 
@@ -351,7 +367,7 @@ export default function JobCloseout() {
 
   const resetFlow = () => {
     setStep(0); setSelectedId("");
-    setOnsiteAdded(0); setFreeGiven(0); setRemainingInteriors(0);
+    setOnsiteAdded(0); setFreeGiven(0); setInteriorsEnabled(false); setInteriorsAdded(0);
     setRecurringAccepted(false); setDepositCollected(false); setInteriorDecision(null);
   };
 
@@ -452,35 +468,38 @@ export default function JobCloseout() {
     const delta = Math.round((1 - (totalWindows > 0 ? avg / RETAIL_RATE : 1)) * 100);
 
     const SummaryRow = ({ label, value, underline, valueColor }: { label: string; value: string; underline?: boolean; valueColor?: string }) => (
-      <div style={{ display: "flex", alignItems: "baseline", padding: "5px 0", borderBottom: "1px solid rgba(196,168,112,0.3)", background: underline ? "rgba(196,168,112,0.1)" : undefined }}>
-        <span style={{ fontSize: 8, color: "#9a7a48", letterSpacing: "0.12em", fontWeight: 700, minWidth: 110, fontFamily: "'Courier New',monospace", textTransform: "uppercase", flexShrink: 0 }}>{label}</span>
-        <div style={{ flex: 1, borderBottom: "1px dotted #c8aa74", margin: "0 6px 2px" }} />
-        <span style={{ fontSize: 13, color: valueColor ?? "#000", fontFamily: "'Courier New',monospace", fontWeight: underline ? 800 : 600, textDecoration: underline ? "underline" : undefined }}>{value}</span>
+      <div style={{ display: "flex", alignItems: "baseline", padding: "5px 0", borderBottom: "1px solid #EBF5FA", background: underline ? "rgba(18,120,160,0.06)" : undefined }}>
+        <span style={{ fontSize: 8, color: "#3AAAC4", letterSpacing: "0.1em", fontWeight: 600, minWidth: 110, textTransform: "uppercase", flexShrink: 0 }}>{label}</span>
+        <div style={{ flex: 1, borderBottom: "1px dotted #B8DCE8", margin: "0 6px 2px" }} />
+        <span style={{ fontSize: 13, color: valueColor ?? "#0A2740", fontWeight: underline ? 800 : 600, textDecoration: underline ? "underline" : undefined }}>{value}</span>
       </div>
     );
 
     const FormCheck = ({ label, checked, onToggle }: { label: string; checked: boolean; onToggle: () => void }) => (
       <label onClick={onToggle} style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer", flex: 1 }}>
         <div style={{
-          width: 15, height: 15, border: "1.5px solid #9a7a48", borderRadius: 2,
-          flexShrink: 0, marginTop: 1, background: checked ? "#2d5a1b" : "transparent",
+          width: 15, height: 15, border: `1.5px solid ${checked ? "#1278A0" : "#B8DCE8"}`, borderRadius: 3,
+          flexShrink: 0, marginTop: 1, background: checked ? "#1278A0" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.15s",
         }}>
-          {checked && <span style={{ color: "#d4f0c0", fontSize: 10, fontWeight: 800, lineHeight: 1 }}>✓</span>}
+          {checked && <span style={{ color: "#FFFFFF", fontSize: 10, fontWeight: 800, lineHeight: 1 }}>✓</span>}
         </div>
-        <span style={{ fontSize: 11, color: "#000", fontFamily: "'Courier New',monospace", lineHeight: 1.45 }}>{label}</span>
+        <span style={{ fontSize: 11, color: "#0A2740", lineHeight: 1.45 }}>{label}</span>
       </label>
     );
 
     return (
       <div style={{
         height: "100vh", display: "flex", flexDirection: "column",
-        background: "#070712",
+        background: "linear-gradient(90deg, #061C2E 0%, #0A2F48 100%)",
         fontFamily: "var(--font-space-grotesk), -apple-system, sans-serif",
       }}>
         <style>{`
           @keyframes iwcBlink { 0%,100%{opacity:1} 50%{opacity:0.25} }
           .iwc-blink { animation: iwcBlink 1.6s ease-in-out infinite; }
+          @keyframes portholePulse { 0%,100%{opacity:0.07} 50%{opacity:0.13} }
+          .porthole-ring { animation: portholePulse 8s ease-in-out infinite; }
         `}</style>
 
         <WorkerBar>
@@ -536,7 +555,40 @@ export default function JobCloseout() {
             )}
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", gap: 24 }}>
+          {/* Beach video — fills middle gap */}
+          <div style={{ flex: 1, minWidth: 0, height: 54, overflow: "hidden", borderRadius: 8, position: "relative", margin: "0 8px" }}>
+            <video
+              ref={videoRef}
+              src="/beach.mp4"
+              muted={videoMuted}
+              playsInline
+              loop
+              style={{
+                width: "100%", height: "100%", objectFit: "cover", display: "block",
+                transform: `translateY(${videoY}%)`,
+                transition: videoTx,
+              }}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+            {/* Sound toggle */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)", marginBottom: 4 }}>
+                sound
+              </div>
+              <button
+                onClick={() => setVideoMuted(m => !m)}
+                style={{
+                  background: "none", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 6,
+                  color: videoMuted ? "rgba(255,255,255,0.3)" : "#3AAAC4",
+                  fontSize: 15, cursor: "pointer", width: 30, height: 30,
+                  display: "flex", alignItems: "center", justifyContent: "center", padding: 0,
+                }}
+              >
+                {videoMuted ? "🔇" : "🔊"}
+              </button>
+            </div>
             <Stat label="Total windows" value={String(totalWindows)} />
             <Stat label="Charged today" value={`$${fmtD(adjustedTotal)}`} color="#34d399" />
             <Stat label="Avg / window" value={`$${fmtD(avg)}`} color="#7EC8E3" />
@@ -544,90 +596,94 @@ export default function JobCloseout() {
           </div>
         </WorkerBar>
 
-        <div style={{ flex: 1, display: "flex", alignItems: "flex-start", padding: "16px 32px 20px", overflowY: "auto" }}>
-          {/* ── Clipboard Document ── */}
+        <div style={{ flex: 1, display: "flex", alignItems: "flex-start", padding: "16px 32px 20px", overflowY: "auto", position: "relative" }}>
+          {/* Porthole decoration */}
+          <div className="porthole-ring" style={{
+            position: "fixed", top: "50%", right: -110, transform: "translateY(-50%)",
+            width: 340, height: 340, borderRadius: "50%", pointerEvents: "none", zIndex: 0,
+            border: "28px solid rgba(192,152,64,0.6)",
+            boxShadow: "inset 0 0 0 4px rgba(192,152,64,0.2), 0 0 0 3px rgba(192,152,64,0.15)",
+          }} />
+          {/* ── Service Record Document ── */}
           <div style={{
-            width: "100%",
-            background: "#f8f2e2",
-            border: "1.5px solid #b59565",
-            borderRadius: 4,
-            boxShadow: "3px 5px 20px rgba(0,0,0,0.45)",
-            fontFamily: "Georgia, 'Times New Roman', serif",
+            width: "100%", position: "relative", zIndex: 1,
+            background: "#FFFFFF",
+            borderTop: "none",
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: "0 24px 64px rgba(10,47,72,0.35), 0 4px 16px rgba(10,47,72,0.18)",
+            fontFamily: "-apple-system, 'Helvetica Neue', Arial, sans-serif",
             zoom: 1.18,
           }}>
 
-            {/* Perforations */}
+            {/* Ocean accent stripe */}
             <div style={{
-              height: 14, borderRadius: "3px 3px 0 0",
-              background: "#ece5cc", borderBottom: "1px solid #c4a870",
-              display: "flex", alignItems: "center", paddingLeft: 8, gap: 6, overflow: "hidden",
-            }}>
-              {Array.from({ length: 60 }).map((_, i) => (
-                <div key={i} style={{ width: 5, height: 5, borderRadius: "50%", background: "#b09060", opacity: 0.5, flexShrink: 0 }} />
-              ))}
-            </div>
+              height: 8,
+              background: "linear-gradient(90deg, #0A3D5C 0%, #1278A0 30%, #3AAAC4 55%, #7ED8EA 75%, #3AAAC4 88%, #1278A0 100%)",
+            }} />
 
             {/* Document Header */}
             <div style={{
-              padding: "10px 20px 8px",
-              borderBottom: "2px solid #b59565",
+              padding: "12px 20px",
+              borderBottom: "1px solid #D8EFF6",
               display: "flex", justifyContent: "space-between", alignItems: "center",
+              background: "#F5FBFD",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div
                   onClick={openPromoPanel}
                   style={{
-                    width: 36, height: 36, borderRadius: 5, overflow: "hidden", flexShrink: 0, cursor: "pointer",
-                    border: `1.5px solid ${appliedPromo ? "#1e8a3a" : showPromoPanel ? "#5a9a6a" : "#b59565"}`,
-                    boxShadow: appliedPromo ? "0 0 8px rgba(0,160,60,0.5)" : "none",
+                    width: 44, height: 44, borderRadius: 10, overflow: "hidden", flexShrink: 0, cursor: "pointer",
+                    border: `2px solid ${appliedPromo ? "#059669" : showPromoPanel ? "#3AAAC4" : "#B8DCE8"}`,
+                    boxShadow: appliedPromo ? "0 0 10px rgba(5,150,105,0.35)" : "0 2px 8px rgba(10,61,92,0.12)",
                   }}
                 >
-                  <img src="/icon.jpg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src="/icon.jpg" alt="Simple Window Cleaning" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#1a1208", letterSpacing: "0.04em", textTransform: "uppercase", fontFamily: "Georgia,serif" }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#0A2740", letterSpacing: "0.01em", lineHeight: 1.2 }}>
                     Simple Window Cleaning
                   </div>
-                  <div style={{ fontSize: 8, color: "#7a5e30", letterSpacing: "0.18em", textTransform: "uppercase", fontFamily: "'Courier New',monospace" }}>
+                  <div style={{ fontSize: 8, color: "#3AAAC4", letterSpacing: "0.16em", textTransform: "uppercase", marginTop: 2 }}>
                     Santa Cruz · Silicon Valley · Est. 2016
                   </div>
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "Georgia,serif" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#0A2740", letterSpacing: "0.04em", textTransform: "uppercase" }}>
                   Service Record
                 </div>
-                <div style={{ fontSize: 9, color: "#7a5e30", fontFamily: "'Courier New',monospace", letterSpacing: "0.08em" }}>
-                  {docDate} · IWC·NET VERIFIED
+                <div style={{ fontSize: 9, color: "#3AAAC4", letterSpacing: "0.05em", marginTop: 2 }}>
+                  {docDate} · Verified ✓
                 </div>
               </div>
             </div>
 
             {/* Promo Panel */}
             {showPromoPanel && (
-              <div style={{ borderBottom: "1px solid #c4a870", background: "#0a160a", padding: "10px 20px" }}>
+              <div style={{ borderBottom: "1px solid #D8EFF6", background: "#EBF7FA", padding: "10px 20px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <span style={{ fontSize: 8, letterSpacing: "0.2em", color: "#4a8060", fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>
+                  <span style={{ fontSize: 8, letterSpacing: "0.18em", color: "#1278A0", textTransform: "uppercase", fontWeight: 600 }}>
                     Worker Exclusive · Promo Codes
                   </span>
-                  <button onClick={() => setShowPromoPanel(false)} style={{ background: "none", border: "none", color: "#4a8060", cursor: "pointer", fontSize: 14, lineHeight: 1 }}>✕</button>
+                  <button onClick={() => setShowPromoPanel(false)} style={{ background: "none", border: "none", color: "#1278A0", cursor: "pointer", fontSize: 14, lineHeight: 1 }}>✕</button>
                 </div>
                 {promoLoading ? (
-                  <div style={{ fontSize: 10, color: "#4a7060", fontFamily: "'Courier New',monospace", marginBottom: 8 }}>Loading…</div>
+                  <div style={{ fontSize: 10, color: "#3AAAC4", marginBottom: 8 }}>Loading…</div>
                 ) : promoCodes.filter(p => p.active).length > 0 ? (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                     {promoCodes.filter(p => p.active).map(pc => (
                       <button key={pc.code} onClick={() => applyPromo(pc.code)} style={{
-                        background: "rgba(0,140,40,0.15)", border: "1px solid rgba(0,140,40,0.3)", borderRadius: 3,
-                        padding: "4px 10px", cursor: "pointer", color: "#7ecc8e",
-                        fontFamily: "'Courier New',monospace", fontSize: 10, letterSpacing: "0.1em",
+                        background: "rgba(18,120,160,0.1)", border: "1px solid rgba(18,120,160,0.25)", borderRadius: 4,
+                        padding: "4px 10px", cursor: "pointer", color: "#0A3D5C",
+                        fontSize: 10, letterSpacing: "0.08em",
                       }}>
                         {pc.code}{pc.notes ? ` · ${pc.notes}` : ""}
                       </button>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ fontSize: 10, color: "#4a7060", fontFamily: "'Courier New',monospace", marginBottom: 8 }}>No active codes — add them in Admin.</div>
+                  <div style={{ fontSize: 10, color: "#3AAAC4", marginBottom: 8 }}>No active codes — add them in Admin.</div>
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <input
@@ -636,26 +692,26 @@ export default function JobCloseout() {
                     onKeyDown={e => { if (e.key === "Enter") applyPromo(promoInput); }}
                     placeholder="ENTER CODE"
                     style={{
-                      flex: 1, background: "rgba(0,30,0,0.5)", border: "1px solid rgba(0,140,40,0.3)",
-                      borderRadius: 3, padding: "6px 10px", color: "#7ecc8e",
-                      fontFamily: "'Courier New',monospace", fontSize: 11, outline: "none", letterSpacing: "0.1em",
+                      flex: 1, background: "#FFFFFF", border: "1px solid #B8DCE8",
+                      borderRadius: 6, padding: "6px 10px", color: "#0A2740",
+                      fontSize: 11, outline: "none", letterSpacing: "0.08em",
                     }}
                   />
                   <button onClick={() => applyPromo(promoInput)} style={{
-                    background: "rgba(0,140,40,0.2)", border: "1px solid rgba(0,140,40,0.3)",
-                    borderRadius: 3, padding: "6px 14px", color: "#7ecc8e",
-                    fontFamily: "'Courier New',monospace", fontSize: 10, cursor: "pointer", letterSpacing: "0.1em",
+                    background: "#1278A0", border: "none",
+                    borderRadius: 6, padding: "6px 14px", color: "#FFFFFF",
+                    fontSize: 10, cursor: "pointer", letterSpacing: "0.06em", fontWeight: 600,
                   }}>APPLY</button>
                 </div>
               </div>
             )}
 
             {/* ── 3-column: Client | Transaction Module | Technician ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr 1fr", borderBottom: "1px solid #c4a870" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr 1fr", borderBottom: "1px solid #D8EFF6" }}>
 
               {/* Client */}
-              <div style={{ padding: "10px 16px", borderRight: "1px solid #c4a870" }}>
-                <div style={{ fontSize: 7, letterSpacing: "0.22em", color: "#7a5e30", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #d4b880" }}>
+              <div style={{ padding: "10px 16px", borderRight: "1px solid #D8EFF6" }}>
+                <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #D8EFF6" }}>
                   Client Information
                 </div>
                 {[
@@ -666,29 +722,30 @@ export default function JobCloseout() {
                   { label: "WINDOWS", value: `${baseWindows} exterior` },
                 ].map(({ label, value }) => (
                   <div key={label} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 7, color: "#9a7a48", letterSpacing: "0.12em", minWidth: 48, fontWeight: 700, paddingTop: 2, fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>{label}</span>
-                    <span style={{ fontSize: 13, color: "#000", fontFamily: "'Courier New',monospace", lineHeight: 1.35 }}>{value}</span>
+                    <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.1em", minWidth: 48, fontWeight: 600, paddingTop: 2, textTransform: "uppercase" }}>{label}</span>
+                    <span style={{ fontSize: 13, color: "#0A2740", lineHeight: 1.35 }}>{value}</span>
                   </div>
                 ))}
               </div>
 
               {/* Transaction Module */}
-              <div style={{ padding: "10px 14px", borderRight: "1px solid #c4a870", display: "flex", flexDirection: "column" }}>
+              <div style={{ padding: "10px 14px", borderRight: "1px solid #D8EFF6", display: "flex", flexDirection: "column" }}>
                 <div style={{
-                  background: "#0a160a", border: "1px solid rgba(0,140,40,0.35)",
-                  borderRadius: 4, flex: 1, display: "flex", flexDirection: "column",
+                  background: "linear-gradient(135deg, #0A3D5C 0%, #1278A0 100%)",
+                  borderRadius: 8, flex: 1, display: "flex", flexDirection: "column",
+                  boxShadow: "0 4px 16px rgba(10,61,92,0.25)",
                 }}>
                   {/* Module header */}
                   <div style={{
-                    padding: "6px 10px", borderBottom: "1px solid rgba(0,140,40,0.2)",
+                    padding: "6px 10px", borderBottom: "1px solid rgba(255,255,255,0.1)",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                   }}>
-                    <span style={{ fontSize: 7, color: "#4a8060", letterSpacing: "0.2em", fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>
-                      Transaction Module
+                    <span style={{ fontSize: 7, color: "rgba(255,255,255,0.55)", letterSpacing: "0.18em", textTransform: "uppercase" }}>
+                      Transaction Summary
                     </span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 7, color: "#4a8060", fontFamily: "'Courier New',monospace" }}>
-                      <span className="iwc-blink" style={{ width: 5, height: 5, borderRadius: "50%", background: "#3cb85c", display: "inline-block" }} />
-                      CONNECTED
+                    <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 7, color: "rgba(255,255,255,0.4)" }}>
+                      <span className="iwc-blink" style={{ width: 5, height: 5, borderRadius: "50%", background: "#3AAAC4", display: "inline-block" }} />
+                      VERIFIED
                     </span>
                   </div>
                   {/* Data grid */}
@@ -708,8 +765,8 @@ export default function JobCloseout() {
                         { label: "SAVINGS", value: `$${fmtD(retailFull - totalRevenue)}` },
                       ]).map(({ label, value }) => (
                         <div key={label} style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: 6, color: "#4a7a58", letterSpacing: "0.12em", marginBottom: 3, fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>{label}</div>
-                          <div style={{ border: "1px solid rgba(0,140,40,0.3)", borderRadius: 2, padding: "5px 2px", background: "rgba(0,12,0,0.45)", fontFamily: "'Courier New',monospace", fontSize: 11, fontWeight: 700, color: "#7ecc8e" }}>
+                          <div style={{ fontSize: 6, color: "rgba(255,255,255,0.4)", letterSpacing: "0.1em", marginBottom: 3, textTransform: "uppercase" }}>{label}</div>
+                          <div style={{ borderRadius: 4, padding: "5px 2px", background: "rgba(0,0,0,0.2)", fontSize: 11, fontWeight: 700, color: "#7ECAD8" }}>
                             {value}
                           </div>
                         </div>
@@ -717,22 +774,22 @@ export default function JobCloseout() {
                     </div>
                   </div>
                   {/* Status line */}
-                  <div style={{ padding: "5px 10px", borderTop: "1px solid rgba(0,140,40,0.2)", fontFamily: "'Courier New',monospace", fontSize: 7, color: "#4a7a58", letterSpacing: "0.08em", display: "flex", gap: 8 }}>
-                    <span>RATE <strong style={{ color: "#7ecc8e" }}>${fmtD(avg)}/WIN</strong></span>
+                  <div style={{ padding: "5px 10px", borderTop: "1px solid rgba(255,255,255,0.08)", fontSize: 7, color: "rgba(255,255,255,0.35)", letterSpacing: "0.07em", display: "flex", gap: 8 }}>
+                    <span>RATE <strong style={{ color: "#7ECAD8" }}>${fmtD(avg)}/WIN</strong></span>
                     <span>·</span>
-                    <span><strong style={{ color: "#7ecc8e" }}>{delta}%</strong> BELOW RETAIL</span>
-                    {appliedPromo && <><span>·</span><span>CODE <strong style={{ color: "#7ecc8e" }}>{appliedPromo.code}</strong></span></>}
+                    <span><strong style={{ color: "#7ECAD8" }}>{delta}%</strong> BELOW RETAIL</span>
+                    {appliedPromo && <><span>·</span><span>CODE <strong style={{ color: "#7ECAD8" }}>{appliedPromo.code}</strong></span></>}
                     <span>·</span>
-                    <span>VERIFIED ✓</span>
+                    <span>CONFIRMED ✓</span>
                   </div>
                 </div>
               </div>
 
               {/* Technician */}
               <div style={{ padding: "10px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <img src="/badge.jpg" alt="Technician" style={{ width: 56, height: 56, borderRadius: 5, objectFit: "cover", objectPosition: "top", border: "1.5px solid #b59565", flexShrink: 0 }} />
+                <img src="/badge.jpg" alt="Technician" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", objectPosition: "top", border: "2px solid #D8EFF6", flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 7, letterSpacing: "0.22em", color: "#7a5e30", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #d4b880" }}>
+                  <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #D8EFF6" }}>
                     Technician
                   </div>
                   {[
@@ -742,8 +799,8 @@ export default function JobCloseout() {
                     { label: "CERT",     value: "Ladder-Free Specialist" },
                   ].map(({ label, value }) => (
                     <div key={label} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "flex-start" }}>
-                      <span style={{ fontSize: 7, color: "#9a7a48", letterSpacing: "0.12em", minWidth: 48, fontWeight: 700, paddingTop: 2, fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>{label}</span>
-                      <span style={{ fontSize: 13, color: "#000", fontFamily: "'Courier New',monospace", lineHeight: 1.35 }}>{value}</span>
+                      <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.1em", minWidth: 48, fontWeight: 600, paddingTop: 2, textTransform: "uppercase" }}>{label}</span>
+                      <span style={{ fontSize: 13, color: "#0A2740", lineHeight: 1.35 }}>{value}</span>
                     </div>
                   ))}
                 </div>
@@ -751,16 +808,16 @@ export default function JobCloseout() {
             </div>
 
             {/* ── 2-column: Service Summary | Offer Box ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: "1px solid #c4a870" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: "1px solid #D8EFF6" }}>
 
               {/* Service Summary */}
-              <div style={{ padding: "10px 16px", borderRight: "1px solid #c4a870" }}>
-                <div style={{ fontSize: 7, letterSpacing: "0.22em", color: "#7a5e30", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #d4b880" }}>
+              <div style={{ padding: "10px 16px", borderRight: "1px solid #D8EFF6" }}>
+                <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #D8EFF6" }}>
                   Service Summary
                 </div>
                 <SummaryRow label="WINDOWS ORDERED" value={`${baseWindows} exterior`} />
-                <div style={{ paddingLeft: 4, paddingBottom: 4, borderBottom: "1px solid rgba(196,168,112,0.2)", marginBottom: 1 }}>
-                  <span style={{ fontSize: 8, color: "#7a5e30", fontFamily: "'Courier New',monospace", fontStyle: "italic", letterSpacing: "0.06em" }}>
+                <div style={{ paddingLeft: 4, paddingBottom: 4, borderBottom: "1px solid rgba(58,170,196,0.15)", marginBottom: 1 }}>
+                  <span style={{ fontSize: 8, color: "#3AAAC4", fontStyle: "italic", letterSpacing: "0.04em" }}>
                     Prepaid online · ${fmtD(baseTotal)}
                   </span>
                 </div>
@@ -772,19 +829,19 @@ export default function JobCloseout() {
                 )}
 
                 {/* Complimentary — inline mini tally */}
-                <div style={{ padding: "5px 0", borderBottom: "1px solid rgba(196,168,112,0.3)" }}>
-                  <div style={{ fontSize: 7, color: "#7a5e30", letterSpacing: "0.14em", fontWeight: 700, fontFamily: "'Courier New',monospace", textTransform: "uppercase", marginBottom: 4 }}>
+                <div style={{ padding: "5px 0", borderBottom: "1px solid #EBF5FA" }}>
+                  <div style={{ fontSize: 7, color: "#1278A0", letterSpacing: "0.14em", fontWeight: 700, textTransform: "uppercase", marginBottom: 4 }}>
                     Complimentary
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 7, color: "#9a7a48", letterSpacing: "0.1em", fontFamily: "'Courier New',monospace", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       1st Year Promo
                     </span>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <button onClick={() => setFreeGiven(prev => Math.max(0, prev - 1))} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #c4a870", background: "transparent", color: "#9a7a48", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, lineHeight: 1 }}>−</button>
-                      <span style={{ fontSize: 13, color: "#000", fontFamily: "'Courier New',monospace", fontWeight: 700, minWidth: 14, textAlign: "center" }}>{freeGiven}</span>
-                      <button onClick={() => setFreeGiven(prev => prev + 1)} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #c4a870", background: "transparent", color: "#9a7a48", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, lineHeight: 1 }}>+</button>
-                      <span style={{ fontSize: 11, color: "#000", fontFamily: "'Courier New',monospace", marginLeft: 3 }}>
+                      <button onClick={() => setFreeGiven(prev => Math.max(0, prev - 1))} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #B8DCE8", background: "transparent", color: "#1278A0", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, lineHeight: 1 }}>−</button>
+                      <span style={{ fontSize: 13, color: "#0A2740", fontWeight: 700, minWidth: 14, textAlign: "center" }}>{freeGiven}</span>
+                      <button onClick={() => setFreeGiven(prev => prev + 1)} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #B8DCE8", background: "transparent", color: "#1278A0", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0, flexShrink: 0, lineHeight: 1 }}>+</button>
+                      <span style={{ fontSize: 11, color: "#0A2740", marginLeft: 3 }}>
                         {freeGiven > 0 ? `${freeGiven} win free` : "none"}
                       </span>
                     </div>
@@ -792,11 +849,11 @@ export default function JobCloseout() {
                 </div>
 
                 {screenCount > 0 && (
-                  <div style={{ padding: "4px 0", borderBottom: "1px solid rgba(196,168,112,0.3)" }}>
+                  <div style={{ padding: "4px 0", borderBottom: "1px solid #EBF5FA" }}>
                     <SummaryRow label="SCREEN HANDLING" value={`${screenCount} × $${SCREEN_RATE} = $${fmtD(screenTotal)}`} />
                     {tookScreenLesson && (
                       <div style={{ paddingLeft: 4, paddingBottom: 2 }}>
-                        <span style={{ fontSize: 7, color: "#5a7a50", fontFamily: "'Courier New',monospace", fontStyle: "italic", letterSpacing: "0.06em" }}>
+                        <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>
                           lesson credit: −${screenCredit.toFixed(2)} at next arrival (screens staged)
                         </span>
                       </div>
@@ -819,114 +876,108 @@ export default function JobCloseout() {
                 )))}
               </div>
 
-              {/* Offer Box — PowerPoint Slide */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
+              {/* Offer Box */}
+              <div style={{ display: "flex", flexDirection: "column", position: "relative" }}>
                 {/* Slide header */}
-                <div style={{ background: "#1e4a14", color: "#d4f0c0", padding: "6px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 8, letterSpacing: "0.18em", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace" }}>
-                    {canShowOffer ? (depositRequired ? "Six-Month Locked Rate Offer" : "Next Visit — Book Now!") : "Price Analysis"}
+                <div style={{ background: "linear-gradient(90deg, #0A3D5C, #1278A0)", color: "#FFFFFF", padding: "6px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 8, letterSpacing: "0.14em", fontWeight: 700, textTransform: "uppercase" }}>
+                    {canShowOffer ? (depositRequired ? "Seven-Month Locked Rate Offer" : "Next Visit — Book Now!") : "Price Analysis"}
                   </span>
-                  <span style={{ fontSize: 7, fontFamily: "'Courier New',monospace", color: "rgba(212,240,192,0.5)", letterSpacing: "0.08em" }}>
-                    IWC·NET AUTHORIZED
+                  <span style={{ fontSize: 7, color: "rgba(255,255,255,0.4)", letterSpacing: "0.08em" }}>
+                    VERIFIED ✓
                   </span>
                 </div>
 
                 {/* Slide body */}
-                <div style={{ padding: "10px 12px", background: "#f0ead4", display: "flex", gap: 10, alignItems: "stretch" }}>
+                <div style={{ padding: "10px 12px", background: "#F0F9FC", display: "flex", gap: 10, alignItems: "stretch" }}>
                   {/* Thermometer box */}
                   <ThermometerChart avg={avg} retailRate={RETAIL_RATE} />
 
                   {/* Content box */}
-                  <div style={{ flex: 1, border: "1px solid #c4a870", borderRadius: 3, background: "#e8e0c8", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 0 }}>
+                  <div style={{ flex: 1, border: "1px solid #B8DCE8", borderRadius: 6, background: "#FFFFFF", padding: "8px 10px", display: "flex", flexDirection: "column", gap: 0 }}>
                     {/* vs retail header */}
-                    <div style={{ fontSize: 7, color: "#9a4040", fontFamily: "'Courier New',monospace", letterSpacing: "0.06em", paddingBottom: 5, marginBottom: 4, borderBottom: "1px solid rgba(196,168,112,0.4)" }}>
-                      vs <span style={{ textDecoration: "line-through" }}>${RETAIL_RATE}</span> retail
-                      {delta > 0 && <span style={{ color: "#16a34a", fontWeight: 700 }}> · {delta}% BELOW</span>}
+                    <div style={{ fontSize: 7, color: "#1278A0", letterSpacing: "0.06em", paddingBottom: 5, marginBottom: 4, borderBottom: "1px solid #EBF5FA" }}>
+                      vs <span style={{ textDecoration: "line-through", color: "#B0C8D4" }}>${RETAIL_RATE}</span> retail
+                      {delta > 0 && <span style={{ color: "#059669", fontWeight: 700 }}> · {delta}% BELOW</span>}
                     </div>
 
                     {canShowOffer ? (
                       depositRequired ? (
                         /* ── Deposit offer: full breakdown ── */
                         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                          {/* Today's total vs retail */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid rgba(196,168,112,0.25)" }}>
-                            <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               Today&apos;s total
                             </span>
-                            <span style={{ fontSize: 10, color: "#1a1208", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>
-                              ${fmtD(adjustedTotal)}<span style={{ fontSize: 7, color: "#9a7a48", fontWeight: 400, textDecoration: "line-through", marginLeft: 5 }}>${fmtI(retailFull)} retail</span>
+                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
+                              ${fmtD(adjustedTotal)}<span style={{ fontSize: 7, color: "#B0C8D4", fontWeight: 400, textDecoration: "line-through", marginLeft: 5 }}>${fmtI(retailFull)} retail</span>
                             </span>
                           </div>
-                          {/* Gross */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid rgba(196,168,112,0.25)" }}>
-                            <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               Next visit · {totalWindows} win
                             </span>
-                            <span style={{ fontSize: 10, color: "#1a1208", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>
+                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
                               ${fmtD(nextVisitGross)}
                             </span>
                           </div>
-                          {/* First order credit */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid rgba(196,168,112,0.25)" }}>
-                            <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               First order total
                             </span>
-                            <span style={{ fontSize: 10, color: "#1a5c2a", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>
                               −${fmtD(firstOrderCredit)}
                             </span>
                           </div>
-                          {/* Prepay deposit */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #c4a870" }}>
-                            <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               Prepay ${DEPOSIT}
                             </span>
-                            <span style={{ fontSize: 10, color: "#1a5c2a", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>
                               −${fmtD(DEPOSIT)}
                             </span>
                           </div>
-                          {/* Final total */}
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
                             <div>
-                              <div style={{ fontSize: 7, color: "#1e4a14", fontFamily: "'Courier New',monospace", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", lineHeight: 1.3 }}>
+                              <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
                                 Next Visit Booked Now
                               </div>
-                              <div style={{ fontSize: 6, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.06em" }}>
+                              <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
                                 ${DEPOSIT} deposit · balance at service
                               </div>
-                              <div style={{ fontSize: 6, color: "#9a7a48", fontFamily: "'Courier New',monospace", fontStyle: "italic", marginTop: 3 }}>
+                              <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
                                 *valid 7 months
                               </div>
                             </div>
-                            <div style={{ fontSize: 26, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
+                            <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
                               ${fmtD(balanceDue)}
                             </div>
                           </div>
 
-                          {/* Screen handling on next visit */}
                           {screenCount > 0 && (
-                            <div style={{ borderTop: "1px dashed #c4a870", marginTop: 5, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
+                            <div style={{ borderTop: "1px dashed #B8DCE8", marginTop: 5, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
                               {tookScreenLesson ? (
                                 <>
                                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0" }}>
-                                    <span style={{ fontSize: 7, color: "#5a7a50", fontFamily: "'Courier New',monospace", fontStyle: "italic", letterSpacing: "0.06em" }}>− next-visit screens (staged)</span>
-                                    <span style={{ fontSize: 9, color: "#1a5c2a", fontFamily: "'Courier New',monospace", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
+                                    <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− next-visit screens (staged)</span>
+                                    <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
                                   </div>
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid rgba(196,168,112,0.3)" }}>
-                                    <span style={{ fontSize: 7, color: "#5a7a50", fontFamily: "'Courier New',monospace", fontStyle: "italic", letterSpacing: "0.06em" }}>− today&apos;s screens · credit</span>
-                                    <span style={{ fontSize: 9, color: "#1a5c2a", fontFamily: "'Courier New',monospace", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid #EBF5FA" }}>
+                                    <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− today&apos;s screens · credit</span>
+                                    <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
                                   </div>
                                 </>
                               ) : (
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid rgba(196,168,112,0.3)" }}>
-                                  <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>+ screen handling ({screenCount} screens)</span>
-                                  <span style={{ fontSize: 9, color: "#1a1208", fontFamily: "'Courier New',monospace", fontWeight: 700 }}>+${fmtD(screenTotal)}</span>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid #EBF5FA" }}>
+                                  <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>+ screen handling ({screenCount} screens)</span>
+                                  <span style={{ fontSize: 9, color: "#0A2740", fontWeight: 700 }}>+${fmtD(screenTotal)}</span>
                                 </div>
                               )}
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
-                                <span style={{ fontSize: 7, color: "#1e4a14", fontFamily: "'Courier New',monospace", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                                <span style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                                   {tookScreenLesson ? "With Staging" : "With Screens"}
                                 </span>
-                                <div style={{ fontSize: 22, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
+                                <div style={{ fontSize: 22, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
                                   ${fmtD(tookScreenLesson ? balanceDue - screenTotal : balanceDue + screenTotal)}
                                 </div>
                               </div>
@@ -936,27 +987,27 @@ export default function JobCloseout() {
                       ) : (
                         /* ── No-deposit offer (freeGiven only) ── */
                         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #c4a870" }}>
-                            <span style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.07em", textTransform: "uppercase" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               Next visit · {totalWindows} win
                             </span>
-                            <span style={{ fontSize: 10, color: "#1a1208", fontFamily: "'Courier New',monospace", fontWeight: 600 }}>
+                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
                               ${fmtD(nextVisitGross)}
                             </span>
                           </div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
                             <div>
-                              <div style={{ fontSize: 7, color: "#1e4a14", fontFamily: "'Courier New',monospace", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", lineHeight: 1.3 }}>
+                              <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
                                 Next Visit Booked Now
                               </div>
-                              <div style={{ fontSize: 6, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.06em" }}>
+                              <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
                                 Rate locked · no deposit
                               </div>
-                              <div style={{ fontSize: 6, color: "#9a7a48", fontFamily: "'Courier New',monospace", fontStyle: "italic", marginTop: 3 }}>
+                              <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
                                 *valid 7 months
                               </div>
                             </div>
-                            <div style={{ fontSize: 26, fontWeight: 900, color: "#1a5c2a", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
+                            <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
                               ${fmtD(nextVisitGross)}
                             </div>
                           </div>
@@ -971,20 +1022,61 @@ export default function JobCloseout() {
                           `YOUR RATE IS ALWAYS WAITING`,
                         ].map((pt, i) => (
                           <div key={i} style={{ display: "flex", gap: 4, alignItems: "baseline" }}>
-                            <span style={{ color: "#1e4a14", fontSize: 7, flexShrink: 0 }}>▸</span>
-                            <span style={{ fontSize: 8, color: "#1a1208", fontFamily: "'Courier New',monospace", letterSpacing: "0.04em", lineHeight: 1.35 }}>{pt}</span>
+                            <span style={{ color: "#3AAAC4", fontSize: 7, flexShrink: 0 }}>▸</span>
+                            <span style={{ fontSize: 8, color: "#0A2740", letterSpacing: "0.04em", lineHeight: 1.35 }}>{pt}</span>
                           </div>
                         ))}
                       </div>
                     )}
                   </div>
                 </div>
+
+                {/* ── Interior add-on ── */}
+                <div style={{ padding: "6px 14px 8px", borderTop: "1px solid #D8EFF6", background: "#F5FBFD" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginBottom: interiorsEnabled ? 6 : 0 }}>
+                    <div
+                      onClick={() => { setInteriorsEnabled(p => { if (p) setInteriorsAdded(0); return !p; }); }}
+                      style={{
+                        width: 13, height: 13, borderRadius: 3,
+                        border: `1.5px solid ${interiorsEnabled ? "#1278A0" : "#B8DCE8"}`,
+                        background: interiorsEnabled ? "#1278A0" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {interiorsEnabled && <span style={{ color: "#fff", fontSize: 8, fontWeight: 800, lineHeight: 1 }}>✓</span>}
+                    </div>
+                    <span style={{ fontSize: 8, color: "#1278A0", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                      Add interior?
+                    </span>
+                  </label>
+                  {interiorsEnabled && (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                        <button onClick={() => setInteriorsAdded(p => Math.max(0, p - 1))} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #B8DCE8", background: "transparent", color: "#1278A0", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>−</button>
+                        <span style={{ fontSize: 13, color: "#0A2740", fontWeight: 700, minWidth: 14, textAlign: "center" }}>{interiorsAdded}</span>
+                        <button onClick={() => setInteriorsAdded(p => p + 1)} style={{ width: 15, height: 15, borderRadius: "50%", border: "1px solid #B8DCE8", background: "transparent", color: "#1278A0", cursor: "pointer", fontSize: 9, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>+</button>
+                        <span style={{ fontSize: 8, color: "#3AAAC4" }}>interior win · $12.50 ea <span style={{ textDecoration: "line-through", color: "#B0C8D4" }}>$15</span></span>
+                      </div>
+                      <button
+                        onClick={() => setShowAgreementModal(true)}
+                        style={{
+                          background: "#1278A0", border: "none", borderRadius: 5,
+                          color: "#fff", fontSize: 8, fontWeight: 700, padding: "4px 10px",
+                          cursor: "pointer", letterSpacing: "0.06em",
+                        }}
+                      >
+                        NEXT →
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* ── Sign-Off Row ── */}
-            <div style={{ padding: "8px 20px", borderBottom: "1px dashed #c4a870" }}>
-              <div style={{ fontSize: 7, letterSpacing: "0.22em", color: "#7a5e30", fontWeight: 700, textTransform: "uppercase", fontFamily: "'Courier New',monospace", marginBottom: 6 }}>
+            <div style={{ padding: "8px 20px", borderBottom: "1px solid #EBF5FA" }}>
+              <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>
                 Technician Sign-Off
               </div>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
@@ -1016,155 +1108,103 @@ export default function JobCloseout() {
             </div>
 
             {/* Footer */}
-            <div style={{ background: "#ece5cc", borderRadius: "0 0 3px 3px", padding: "5px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.12em" }}>
+            <div style={{ background: "linear-gradient(90deg, #0A3D5C 0%, #1278A0 100%)", borderRadius: "0 0 8px 8px", padding: "6px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 7, color: "rgba(255,255,255,0.55)", letterSpacing: "0.1em" }}>
                 {canShowOffer
                   ? depositRequired
                     ? `$10 deposit due today via Venmo · $${fmtD(balanceDue)} balance due at service · Valid 7 months`
                     : `Rate locked at $${fmtD(avg)}/win · Schedule next visit now · Valid 7 months`
                   : "Thank you for your business · SimpleWindowCleaning.com"}
               </div>
-              <div style={{ fontSize: 7, color: "#9a7a48", fontFamily: "'Courier New',monospace", letterSpacing: "0.16em" }}>
+              <div style={{ fontSize: 7, color: "rgba(255,255,255,0.3)", letterSpacing: "0.14em" }}>
                 COPY 1 OF 5
               </div>
             </div>
           </div>
         </div>
 
+        {/* Agreement modal */}
+        {showAgreementModal && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(10,47,72,0.82)", backdropFilter: "blur(6px)" }}>
+            <div style={{ background: "#FFFFFF", borderRadius: 14, padding: "24px 22px", maxWidth: 420, width: "calc(100vw - 40px)", maxHeight: "80vh", overflowY: "auto", position: "relative", boxShadow: "0 24px 64px rgba(10,47,72,0.5)" }}>
+              <button onClick={() => setShowAgreementModal(false)} style={{ position: "absolute", top: 12, right: 16, background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#0A2740", lineHeight: 1 }}>×</button>
+
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#3AAAC4", marginBottom: 10 }}>
+                Service Authorization · Additional Items
+              </div>
+
+              <p style={{ fontSize: 11, color: "#0A2740", lineHeight: 1.65, margin: "0 0 10px" }}>
+                We just cleaned <strong>{baseWindows + onsiteAdded + freeGiven} exterior window{baseWindows + onsiteAdded + freeGiven !== 1 ? "s" : ""}</strong>
+                {freeGiven > 0 && ` — including ${freeGiven} complimentary via 1st year promo`}.
+                {baseTotal > 0 && <span style={{ color: "#3AAAC4", fontSize: 9 }}> (prepaid online · ${fmtD(baseTotal)})</span>}
+              </p>
+
+              {screenCount > 0 && (
+                <div style={{ borderTop: "1px solid #EBF5FA", paddingTop: 8, marginBottom: 8 }}>
+                  <p style={{ fontSize: 10, color: "#0A2740", margin: "0 0 6px", lineHeight: 1.5 }}>
+                    <strong>{screenCount} screen{screenCount !== 1 ? "s" : ""}</strong> were also handled today.
+                  </p>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4, opacity: 0.6, cursor: "default" }}>
+                    <input type="checkbox" checked={!tookScreenLesson} readOnly style={{ marginTop: 2, flexShrink: 0 }} />
+                    <span style={{ fontSize: 9, color: "#0A2740", lineHeight: 1.5 }}>
+                      I paid $2/screen for the tech to briefly enter with shoe covers to remove and reinstall screens. Today&apos;s charge: <strong>${fmtD(screenTotal)}</strong>.
+                    </span>
+                  </label>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: 6, opacity: 0.6, cursor: "default" }}>
+                    <input type="checkbox" checked={tookScreenLesson} readOnly style={{ marginTop: 2, flexShrink: 0 }} />
+                    <span style={{ fontSize: 9, color: "#0A2740", lineHeight: 1.5 }}>
+                      I took a free lesson and will stage screens myself next visit. I still pay $2/screen today, but receive a $1/screen credit at my next arrival.
+                    </span>
+                  </label>
+                </div>
+              )}
+
+              {interiorsAdded > 0 && (
+                <div style={{ borderTop: "1px solid #EBF5FA", paddingTop: 8, marginBottom: 8 }}>
+                  <p style={{ fontSize: 10, color: "#0A2740", margin: 0, lineHeight: 1.5 }}>
+                    I have also added <strong>{interiorsAdded} interior window{interiorsAdded !== 1 ? "s" : ""}</strong> to today&apos;s visit for <strong>${fmtD(interiorTotal)}</strong> — that&apos;s <strong>$12.50 each</strong> instead of $15 retail.
+                  </p>
+                </div>
+              )}
+
+              <div style={{ borderTop: "1px solid #EBF5FA", paddingTop: 10, marginTop: 2 }}>
+                <p style={{ fontSize: 10, color: "#0A2740", margin: "0 0 4px", lineHeight: 1.5 }}>
+                  I authorize an additional <strong>${fmtD(adjustedTotal)}</strong> for today&apos;s add-on services.
+                </p>
+                <p style={{ fontSize: 9, color: "#3AAAC4", margin: 0, lineHeight: 1.5 }}>
+                  Today&apos;s additions unlock promo codes valid for the next 13 months.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <ConfirmBar>
           <button
-            onClick={() => canProceed && setStep(2)}
-            disabled={!canProceed}
+            onClick={() => canProceed && saveAndAdvance(interiorsAdded > 0 ? "today" : "declined")}
+            disabled={!canProceed || saving}
             style={{
               width: "100%", padding: "21px",
-              background: canProceed ? "#16a34a" : "rgba(255,255,255,0.05)",
+              background: canProceed ? "linear-gradient(135deg, #0A3D5C, #1278A0)" : "rgba(255,255,255,0.05)",
               border: "none", borderRadius: 16,
               fontSize: 18, fontWeight: 700,
               color: canProceed ? "white" : "rgba(255,255,255,0.18)",
-              cursor: canProceed ? "pointer" : "default",
+              boxShadow: canProceed ? "0 4px 20px rgba(18,120,160,0.4)" : "none",
+              cursor: canProceed && !saving ? "pointer" : "default",
               transition: "all 0.2s", letterSpacing: "0.01em",
             }}
           >
-            {canShowOffer ? "Lock This Rate & Collect Deposit →" : "Finish & Move to Interior Check →"}
+            {saving ? "Saving…" : "Now Get to Work! →"}
           </button>
         </ConfirmBar>
       </div>
     );
   }
 
-  // ─── STEP 2: Interior Upsell ────────────────────────────────────────────
-  if (step === 2) return (
-    <div style={{
-      minHeight: "100vh", display: "flex", flexDirection: "column",
-      background: "#070712",
-      fontFamily: "var(--font-space-grotesk), -apple-system, sans-serif",
-    }}>
-      <WorkerBar>
-        <Stepper label="Remaining interiors" value={remainingInteriors} onChange={setRemainingInteriors} />
-        {remainingInteriors > 0 && (
-          <div style={{ display: "flex", gap: 24 }}>
-            <Stat label="On-site price" value={`$${fmtD(interiorTotal)}`} color="#34d399" />
-            <Stat label="BOGO next visit" value={`$${fmtD(interiorBogo)}`} color="#7EC8E3" />
-            <Stat label="Full house next" value={`$${fmtD(fullHouseNext)}`} color="#a78bfa" />
-          </div>
-        )}
-      </WorkerBar>
-
-      <div style={{ flex: 1, padding: "32px 40px", overflowY: "auto" }}>
-        <ScriptCard heading="Interior Opportunity">
-          {remainingInteriors === 0 ? (
-            <p style={{ fontSize: 19, color: "#94a3b8", lineHeight: 1.7, margin: 0 }}>
-              Set the number of remaining interior windows above to see the offer, or skip below.
-            </p>
-          ) : (
-            <>
-              <p style={{ fontSize: 20, color: "#1e293b", lineHeight: 1.75, margin: "0 0 28px" }}>
-                One more thing — you noticed how well we do interiors. I actually have time today
-                and can do the remaining <strong>{plural(remainingInteriors, "window")}</strong> for{" "}
-                <span style={{ fontSize: 26, fontWeight: 800, color: "#16a34a" }}>${fmtD(interiorTotal)}</span>{" "}
-                with an on-site promo — that&rsquo;s 10% off today&rsquo;s average since I&rsquo;m already here.
-                It&rsquo;s more labor-intensive so the price doesn&rsquo;t get much better than that, but I&rsquo;ll
-                rinse the tracks and show you the maintenance routine too.
-              </p>
-
-              <div style={{
-                background: "linear-gradient(135deg, #eff6ff, #dbeafe)",
-                border: "1.5px solid #93c5fd",
-                borderRadius: 18, padding: "26px 30px", marginBottom: 20,
-              }}>
-                <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: "0.15em",
-                  textTransform: "uppercase", color: "#1d4ed8", marginBottom: 12,
-                }}>
-                  The Bonus
-                </div>
-                <p style={{ fontSize: 19, color: "#1e293b", lineHeight: 1.75, margin: 0 }}>
-                  Doing them today also unlocks a <strong>50% interior bonus</strong> — next visit those{" "}
-                  {remainingInteriors} windows come back for only{" "}
-                  <strong>${fmtD(interiorBogo)}</strong>. Combined with your locked exterior, your
-                  entire home next time would be just{" "}
-                  <span style={{ fontSize: 28, fontWeight: 800, color: "#2563eb" }}>${fmtD(fullHouseNext)}</span>{" "}
-                  instead of{" "}
-                  <span style={{ textDecoration: "line-through", color: "#94a3b8" }}>${fmtI(fullHouseRetail)}</span>.
-                </p>
-              </div>
-            </>
-          )}
-        </ScriptCard>
-      </div>
-
-      <ConfirmBar>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {remainingInteriors > 0 && (
-            <button
-              onClick={() => saveAndAdvance("today")}
-              disabled={saving}
-              style={{
-                width: "100%", padding: "21px",
-                background: "#16a34a", border: "none", borderRadius: 16,
-                fontSize: 18, fontWeight: 700, color: "white",
-                cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1,
-              }}
-            >
-              Yes — Add Interiors Today (${fmtD(interiorTotal)})
-            </button>
-          )}
-          <div style={{ display: "flex", gap: 12 }}>
-            <button
-              onClick={() => saveAndAdvance("scheduled")}
-              disabled={saving}
-              style={{
-                flex: 1, padding: "18px",
-                background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 16, fontSize: 15, fontWeight: 600,
-                color: "rgba(255,255,255,0.75)", cursor: "pointer",
-              }}
-            >
-              Schedule for Later This Week
-            </button>
-            <button
-              onClick={() => saveAndAdvance("declined")}
-              disabled={saving}
-              style={{
-                flex: 1, padding: "18px",
-                background: "transparent", border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 16, fontSize: 15, fontWeight: 600,
-                color: "rgba(255,255,255,0.3)", cursor: "pointer",
-              }}
-            >
-              No Thanks
-            </button>
-          </div>
-        </div>
-      </ConfirmBar>
-    </div>
-  );
-
   // ─── STEP 3: Closeout Summary ───────────────────────────────────────────
-  const interiorLine = interiorDecision === "today"
-    ? `Added today · $${fmtD(interiorTotal)} · BOGO credits active`
-    : interiorDecision === "scheduled" ? "Scheduling for later this week"
-    : "Declined";
+  const interiorLine = interiorsAdded > 0
+    ? `${interiorsAdded} interior${interiorsAdded !== 1 ? "s" : ""} · $${fmtD(interiorTotal)}`
+    : "None added";
 
   return (
     <div style={{
