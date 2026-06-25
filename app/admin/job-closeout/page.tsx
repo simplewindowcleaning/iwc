@@ -303,6 +303,8 @@ export default function JobCloseout() {
   // Accounting values for the original visit
   const originalVisitWindows     = baseWindows + freeGiven;
   const originalVisitRetailValue = baseTotal + freeGiven * RETAIL_RATE;
+  // Fixed arrival rate — never changes as on-site adds accumulate
+  const arrivalAvg = originalVisitWindows > 0 ? baseTotal / originalVisitWindows : 0;
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -940,9 +942,9 @@ export default function JobCloseout() {
 
                 {/* Slide body */}
                 <div style={{ padding: "10px 12px", background: "#F0F9FC", display: "flex", gap: 8, alignItems: "stretch" }}>
-                  {/* Left thermometer — today's avg, freezes at step 2 */}
+                  {/* Left thermometer — arrival rate, locked from step 1 onwards */}
                   <ThermometerChart
-                    avg={isComplete ? frozenAvg : avg}
+                    avg={arrivalAvg}
                     retailRate={RETAIL_RATE}
                     tag="TODAY"
                     frozen={isComplete}
