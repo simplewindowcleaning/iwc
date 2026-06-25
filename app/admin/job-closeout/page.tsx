@@ -293,9 +293,12 @@ export default function JobCloseout() {
   const totalWindows = baseWindows + onsiteAdded + freeGiven + interiorsAdded;
   const avg          = totalWindows > 0 ? windowRevenue / totalWindows : 0;
   const retailFull   = totalWindows * RETAIL_RATE;
-  const nextPrice        = onsiteAdded * avg;
-  const nextVisitGross   = totalWindows * avg;
-  const firstOrderCredit = baseWindows * avg;
+  const qualifyingAdds    = Math.min(onsiteAdded, Math.min(baseWindows, 5));
+  const addCredit         = qualifyingAdds * ONSITE_RATE;
+  const nextVisitDiscount = 2 + addCredit;
+  const nextVisitWindows  = baseWindows + onsiteAdded;
+  const nextVisitRetail   = nextVisitWindows * RETAIL_RATE;
+  const nextVisitOffer    = Math.max(20, Math.max(nextVisitRetail * 0.5, nextVisitRetail - nextVisitDiscount));
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -311,7 +314,7 @@ export default function JobCloseout() {
     const found = promoCodes.find(p => p.code === code.trim().toUpperCase() && p.active);
     if (found) { setAppliedPromo(found); setShowPromoPanel(false); setPromoInput(""); }
   };
-  const balanceDue   = Math.max(0, nextVisitGross - firstOrderCredit - DEPOSIT);
+  const balanceDue   = Math.max(0, nextVisitOffer - DEPOSIT);
   const saveAndAdvance = useCallback(async (decision: InteriorDecision) => {
     setSaving(true);
     try {
@@ -457,8 +460,8 @@ export default function JobCloseout() {
   // ─── STEP 1: Service Record Document ───────────────────────────────────
   if (step === 1 || step === 2) {
     const isComplete      = step === 2;
-    const canShowOffer    = onsiteAdded > 0 || freeGiven > 0;
-    const depositRequired = onsiteAdded > 0;
+    const canShowOffer    = baseWindows > 0;
+    const depositRequired = canShowOffer;
     const canProceed      = canShowOffer
       ? (recurringAccepted && (!depositRequired || depositCollected))
       : recurringAccepted;
@@ -923,7 +926,7 @@ export default function JobCloseout() {
                 {/* Slide header */}
                 <div style={{ background: "linear-gradient(90deg, #0A3D5C, #1278A0)", color: "#FFFFFF", padding: "6px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: 8, letterSpacing: "0.14em", fontWeight: 700, textTransform: "uppercase" }}>
-                    {canShowOffer ? (depositRequired ? "Seven-Month Locked Rate Offer" : "Next Visit — Book Now!") : "Price Analysis"}
+                    {canShowOffer ? "Next Visit Offer" : "Price Analysis"}
                   </span>
                   <span style={{ fontSize: 7, color: "rgba(255,255,255,0.4)", letterSpacing: "0.08em" }}>
                     VERIFIED ✓
@@ -944,117 +947,83 @@ export default function JobCloseout() {
                     </div>
 
                     {canShowOffer ? (
-                      depositRequired ? (
-                        /* ── Deposit offer: full breakdown ── */
-                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                      /* ── Next visit offer breakdown ── */
+                      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
+                          <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                            Next visit · {nextVisitWindows} win · retail
+                          </span>
+                          <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
+                            ${fmtD(nextVisitRetail)}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
+                          <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                            Pre-book discount
+                          </span>
+                          <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−$2.00</span>
+                        </div>
+                        {addCredit > 0 && (
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
                             <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Today&apos;s total
+                              Add credit · {qualifyingAdds}×${ONSITE_RATE}
                             </span>
-                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
-                              ${fmtD(adjustedTotal)}<span style={{ fontSize: 7, color: "#B0C8D4", fontWeight: 400, textDecoration: "line-through", marginLeft: 5 }}>${fmtI(retailFull)} retail</span>
-                            </span>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addCredit)}</span>
                           </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
-                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Next visit · {totalWindows} win
-                            </span>
-                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
-                              ${fmtD(nextVisitGross)}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
-                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              First order total
-                            </span>
-                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>
-                              −${fmtD(firstOrderCredit)}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
-                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Prepay ${DEPOSIT}
-                            </span>
-                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>
-                              −${fmtD(DEPOSIT)}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
-                            <div>
-                              <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
-                                Next Visit Booked Now
-                              </div>
-                              <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
-                                ${DEPOSIT} deposit · balance at service
-                              </div>
-                              <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
-                                *valid 7 months
-                              </div>
+                        )}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
+                          <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                            Prepay ${DEPOSIT}
+                          </span>
+                          <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(DEPOSIT)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
+                          <div>
+                            <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
+                              Next Visit Booked Now
                             </div>
-                            <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
-                              ${fmtD(balanceDue)}
+                            <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
+                              ${DEPOSIT} deposit · balance at service
+                            </div>
+                            <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
+                              *valid 7 months
                             </div>
                           </div>
+                          <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
+                            ${fmtD(balanceDue)}
+                          </div>
+                        </div>
 
-                          {screenCount > 0 && (
-                            <div style={{ borderTop: "1px dashed #B8DCE8", marginTop: 5, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
-                              {tookScreenLesson ? (
-                                <>
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0" }}>
-                                    <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− next-visit screens (staged)</span>
-                                    <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
-                                  </div>
-                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid #EBF5FA" }}>
-                                    <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− today&apos;s screens · credit</span>
-                                    <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
-                                  </div>
-                                </>
-                              ) : (
+                        {screenCount > 0 && (
+                          <div style={{ borderTop: "1px dashed #B8DCE8", marginTop: 5, paddingTop: 4, display: "flex", flexDirection: "column", gap: 0 }}>
+                            {tookScreenLesson ? (
+                              <>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0" }}>
+                                  <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− next-visit screens (staged)</span>
+                                  <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenTotal)}</span>
+                                </div>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid #EBF5FA" }}>
-                                  <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>+ screen handling ({screenCount} screens)</span>
-                                  <span style={{ fontSize: 9, color: "#0A2740", fontWeight: 700 }}>+${fmtD(screenTotal)}</span>
+                                  <span style={{ fontSize: 7, color: "#059669", fontStyle: "italic", letterSpacing: "0.04em" }}>− today&apos;s screens · credit</span>
+                                  <span style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>−${fmtD(screenCredit)}</span>
                                 </div>
-                              )}
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
-                                <span style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                                  {tookScreenLesson ? "With Staging" : "With Screens"}
-                                </span>
-                                <div style={{ fontSize: 22, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
-                                  ${fmtD(tookScreenLesson ? balanceDue - screenTotal : balanceDue + screenTotal)}
-                                </div>
+                              </>
+                            ) : (
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "2px 0", borderBottom: "1px solid #EBF5FA" }}>
+                                <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>+ screen handling ({screenCount} screens)</span>
+                                <span style={{ fontSize: 9, color: "#0A2740", fontWeight: 700 }}>+${fmtD(screenTotal)}</span>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        /* ── No-deposit offer (freeGiven only) ── */
-                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
-                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Next visit · {totalWindows} win
-                            </span>
-                            <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
-                              ${fmtD(nextVisitGross)}
-                            </span>
-                          </div>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
-                            <div>
-                              <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
-                                Next Visit Booked Now
+                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
+                              <span style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                                {tookScreenLesson ? "With Staging" : "With Screens"}
+                              </span>
+                              <div style={{ fontSize: 22, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
+                                ${fmtD(tookScreenLesson ? balanceDue - screenCredit : balanceDue + screenTotal)}
                               </div>
-                              <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
-                                Rate locked · no deposit
-                              </div>
-                              <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
-                                *valid 7 months
-                              </div>
-                            </div>
-                            <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
-                              ${fmtD(nextVisitGross)}
                             </div>
                           </div>
-                        </div>
-                      )
+                        )}
+                      </div>
                     ) : (
                       /* ── No offer ── */
                       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1146,7 +1115,7 @@ export default function JobCloseout() {
                   <>
                     <FormCheck
                       label={depositRequired
-                        ? `Customer confirms next exterior at $${fmtD(balanceDue)} due at service`
+                        ? `Customer pre-books next visit · $${fmtD(balanceDue)} balance due at service`
                         : "Customer schedules next visit now to lock this rate"}
                       checked={recurringAccepted}
                       onToggle={() => setRecurringAccepted(!recurringAccepted)}
@@ -1174,7 +1143,7 @@ export default function JobCloseout() {
               <div style={{ fontSize: 7, color: "rgba(255,255,255,0.55)", letterSpacing: "0.1em" }}>
                 {canShowOffer
                   ? depositRequired
-                    ? `$10 deposit due today via Venmo · $${fmtD(balanceDue)} balance due at service · Valid 7 months`
+                    ? `Pre-book next visit · $10 deposit via Venmo · $${fmtD(balanceDue)} balance at service · Valid 7 months`
                     : `Rate locked at $${fmtD(avg)}/win · Schedule next visit now · Valid 7 months`
                   : "Thank you for your business · SimpleWindowCleaning.com"}
               </div>
