@@ -294,17 +294,19 @@ export default function JobCloseout() {
   const qualifyingAdds    = Math.min(onsiteAdded, Math.min(baseWindows, 5));
   const addCredit         = qualifyingAdds * ONSITE_RATE;
   const nextVisitDiscount = 2 + addCredit;
-  const nextVisitWindows  = baseWindows + onsiteAdded;
+  const nextVisitWindows  = baseWindows + onsiteAdded + freeGiven;
   const nextVisitRetail   = nextVisitWindows * RETAIL_RATE;
   const nextVisitOffer    = Math.max(20, Math.max(nextVisitRetail * 0.5, nextVisitRetail - nextVisitDiscount));
   const nextVisitEffectiveAvg = (nextVisitWindows + qualifyingAdds) > 0
     ? nextVisitOffer / (nextVisitWindows + qualifyingAdds)
     : 0;
+  // Display add credit includes phantom retail for free windows (starts $20 higher on first add)
+  const displayAddCredit = freeGiven * RETAIL_RATE + addCredit;
   // Freeze the right thermometer once qualifying adds are maxed out
   const addCap = Math.min(baseWindows, 5);
   const addsCapped = addCap > 0 && onsiteAdded >= addCap;
   const capAddCredit = addCap * ONSITE_RATE;
-  const capNextVisitWindows = baseWindows + addCap;
+  const capNextVisitWindows = baseWindows + addCap + freeGiven;
   const capNextVisitRetail  = capNextVisitWindows * RETAIL_RATE;
   const capNextVisitOffer   = Math.max(20, Math.max(capNextVisitRetail * 0.5, capNextVisitRetail - (2 + capAddCredit)));
   const capNextVisitEffectiveAvg = addCap > 0
@@ -983,9 +985,9 @@ export default function JobCloseout() {
                         {addCredit > 0 && (
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
                             <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Add credit · {qualifyingAdds}×${ONSITE_RATE}
+                              Add credit · {qualifyingAdds}×${ONSITE_RATE}{freeGiven > 0 ? ` + free win` : ""}
                             </span>
-                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addCredit)}</span>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(displayAddCredit)}</span>
                           </div>
                         )}
                         {depositRequired && (
