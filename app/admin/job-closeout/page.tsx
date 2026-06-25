@@ -473,7 +473,7 @@ export default function JobCloseout() {
   if (step === 1 || step === 2) {
     const isComplete      = step === 2;
     const canShowOffer    = baseWindows > 0;
-    const depositRequired = canShowOffer;
+    const depositRequired = canShowOffer && onsiteAdded > 0;
     const canProceed      = canShowOffer
       ? (recurringAccepted && (!depositRequired || depositCollected))
       : recurringAccepted;
@@ -988,26 +988,28 @@ export default function JobCloseout() {
                             <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addCredit)}</span>
                           </div>
                         )}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
-                          <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                            Prepay ${DEPOSIT}
-                          </span>
-                          <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(DEPOSIT)}</span>
-                        </div>
+                        {depositRequired && (
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px dashed #B8DCE8" }}>
+                            <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                              Prepay ${DEPOSIT}
+                            </span>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(DEPOSIT)}</span>
+                          </div>
+                        )}
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
                           <div>
                             <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
                               Next Visit Booked Now
                             </div>
                             <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
-                              ${DEPOSIT} deposit · balance at service
+                              {depositRequired ? `$${DEPOSIT} deposit · balance at service` : "Pre-book · no deposit required"}
                             </div>
                             <div style={{ fontSize: 6, color: "#B0C8D4", fontStyle: "italic", marginTop: 3 }}>
                               *valid 7 months
                             </div>
                           </div>
                           <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
-                            ${fmtD(balanceDue)}
+                            ${fmtD(depositRequired ? balanceDue : nextVisitOffer)}
                           </div>
                         </div>
 
