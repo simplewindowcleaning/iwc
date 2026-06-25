@@ -246,15 +246,17 @@ export default function JobCloseout() {
   const totalWindows = baseWindows + onsiteAdded + freeGiven + interiorsAdded;
   const avg          = totalWindows > 0 ? windowRevenue / totalWindows : 0;
   const retailFull   = totalWindows * RETAIL_RATE;
-  // Next-visit offer — open (no adds) baseline
+  // Next-visit offer
   const originalVisitWindows     = baseWindows + freeGiven;
   const originalVisitRetailValue = baseTotal + freeGiven * RETAIL_RATE;
-  const addCredit      = onsiteAdded * ONSITE_RATE;
-  const nextVisitWindows = baseWindows + onsiteAdded + freeGiven;
-  const nextVisitRetail  = nextVisitWindows * RETAIL_RATE;
+  const nextVisitWindows  = baseWindows + onsiteAdded + freeGiven;
+  const nextVisitRetail   = nextVisitWindows * RETAIL_RATE;
+  // First Year Add-On Promo: up to min(baseWindows, 5) qualifying adds @ $12.50 credit each
+  const qualifyingAdds   = Math.min(onsiteAdded, Math.min(baseWindows, 5));
+  const addPromoCredit   = qualifyingAdds * ONSITE_RATE;
   const nextVisitOffer   = onsiteAdded === 0
     ? Math.max(20, baseTotal - 2)
-    : Math.max(20, nextVisitRetail - 2 - addCredit);
+    : Math.max(20, nextVisitRetail - 2 - freeGiven * RETAIL_RATE - addPromoCredit);
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -920,8 +922,8 @@ export default function JobCloseout() {
                           </span>
                           <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−$2.00</span>
                         </div>
-                        {/* No adds: free window credit row */}
-                        {freeGiven > 0 && onsiteAdded === 0 && (
+                        {/* Free window credit — always visible when freeGiven > 0 */}
+                        {freeGiven > 0 && (
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
                             <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                               Free window credit
@@ -929,13 +931,13 @@ export default function JobCloseout() {
                             <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(freeGiven * RETAIL_RATE)}</span>
                           </div>
                         )}
-                        {/* With adds: add credit row replaces free credit */}
-                        {onsiteAdded > 0 && (
+                        {/* 1st Year Add-On Promo — separate line, up to min(baseWindows, 5) adds */}
+                        {qualifyingAdds > 0 && (
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
                             <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                              Add credit · {onsiteAdded}×${ONSITE_RATE}
+                              1st Yr Add-On Promo · {qualifyingAdds}×${ONSITE_RATE}
                             </span>
-                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addCredit)}</span>
+                            <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addPromoCredit)}</span>
                           </div>
                         )}
                         {/* Big number */}
