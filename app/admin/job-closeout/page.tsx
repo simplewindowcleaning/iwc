@@ -606,11 +606,14 @@ export default function JobCloseout() {
 
                 {screenHandlingEnabled && (
                   <>
+                    <span style={{ fontSize: 8, color: "rgba(255,255,255,0.3)", lineHeight: 1.3 }}>
+                      {baseWindows} screens w/ handling included
+                    </span>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <button onClick={() => setScreenCount(prev => Math.max(0, prev - 1))} style={{ width: 18, height: 18, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.22)", background: "transparent", color: "rgba(255,255,255,0.55)", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>−</button>
                       <span style={{ fontSize: 19, fontWeight: 800, color: "white", minWidth: 18, textAlign: "center" }}>{screenCount}</span>
                       <button onClick={() => setScreenCount(prev => prev + 1)} style={{ width: 18, height: 18, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.22)", background: "transparent", color: "rgba(255,255,255,0.55)", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>+</button>
-                      <span style={{ fontSize: 8, color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>@ $2 ea</span>
+                      <span style={{ fontSize: 8, color: "rgba(255,255,255,0.28)", letterSpacing: "0.06em" }}>{screenCount > 0 ? "addl @ $2 ea" : "addl screens"}</span>
                       {screenCount > 0 && <span style={{ fontSize: 10, color: "#7EC8E3", fontWeight: 700 }}>${fmtD(screenTotal)}</span>}
                     </div>
 
@@ -1135,13 +1138,23 @@ export default function JobCloseout() {
                     <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                       {/* Box 2: Exterior */}
                       {onsiteAdded === 0 ? (
-                        <div style={{ padding: "5px 14px", borderBottom: "1px solid #D8EFF6", background: "#F5FBFD", display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }}
-                          onClick={() => setOnsiteAdded(1)}
-                        >
-                          <div style={{ width: 13, height: 13, borderRadius: 3, border: "1.5px solid #B8DCE8", background: "transparent", flexShrink: 0 }} />
-                          <span style={{ fontSize: 8, color: "#1278A0", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                            Add on-site exterior windows
-                          </span>
+                        <div style={{ padding: "5px 14px", borderBottom: "1px solid #D8EFF6", background: "#F5FBFD" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer" }} onClick={() => setOnsiteAdded(1)}>
+                            <div style={{ width: 13, height: 13, borderRadius: 3, border: "1.5px solid #B8DCE8", background: "transparent", flexShrink: 0 }} />
+                            <span style={{ fontSize: 8, color: "#1278A0", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                              Add on-site exterior windows
+                            </span>
+                          </div>
+                          {screenHandlingEnabled && (
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingTop: 4 }}>
+                              <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                                {screenCount > 0 ? `Screen handling — addl screens` : "Screen handling today"}
+                              </span>
+                              <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
+                                {screenCount > 0 ? `+$${fmtD(screenTotal)}` : `${baseWindows} incl.`}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div style={{ padding: "5px 14px 6px", borderBottom: "1px solid #D8EFF6", background: "#F0F9FC" }}>
@@ -1159,6 +1172,16 @@ export default function JobCloseout() {
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingLeft: 46 }}>
                               <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>50% off add-on special</span>
                               <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(addPromoCredit)}</span>
+                            </div>
+                          )}
+                          {screenHandlingEnabled && (
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingLeft: 46 }}>
+                              <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                                {screenCount > 0 ? `Screen handling — addl screens` : "Screen handling today"}
+                              </span>
+                              <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>
+                                {screenCount > 0 ? `+$${fmtD(screenTotal)}` : `${baseWindows} incl.`}
+                              </span>
                             </div>
                           )}
                         </div>
