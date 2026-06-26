@@ -1351,9 +1351,6 @@ export default function JobCloseout() {
                     : `Rate locked at $${fmtD(avg)}/win · Schedule next visit now · Valid 7 months`
                   : "Thank you for your business · SimpleWindowCleaning.com"}
               </div>
-              <div style={{ fontSize: 7, color: "rgba(255,255,255,0.3)", letterSpacing: "0.14em" }}>
-                COPY 1 OF 5
-              </div>
             </div>
           </div>
         </div>
