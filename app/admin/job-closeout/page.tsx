@@ -270,11 +270,11 @@ export default function JobCloseout() {
   const arrivalAvg            = originalVisitWindows > 0 ? baseTotal / originalVisitWindows : 0;
   const nextVisitEffectiveAvg = nextVisitWindows > 0 ? nextVisitOffer / nextVisitWindows : 0;
   // Step 3 (review) next-visit plan
-  const reviewRetailValue       = nextVisitWindows * RETAIL_RATE;
+  const reviewRetailValue       = totalWindows * RETAIL_RATE;
   const reviewPreviousDiscounts = 2 + freeGiven * RETAIL_RATE;
-  const reviewInteriorCarry     = interiorsAdded * ONSITE_RATE;
-  const reviewBeforePrepay = reviewRetailValue - reviewPreviousDiscounts - addPromoCredit + reviewInteriorCarry;
-  const reviewThermAvg     = nextVisitWindows > 0 ? reviewBeforePrepay / nextVisitWindows : 0;
+  const reviewInteriorCarry     = interiorsAdded * (RETAIL_RATE - ONSITE_RATE);
+  const reviewBeforePrepay      = reviewRetailValue - reviewPreviousDiscounts - addPromoCredit - reviewInteriorCarry;
+  const reviewThermAvg          = totalWindows > 0 ? reviewBeforePrepay / totalWindows : 0;
 
   const openPromoPanel = () => {
     setShowPromoPanel(p => !p);
@@ -1005,7 +1005,7 @@ export default function JobCloseout() {
                           <>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
                               <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                                Next visit · {nextVisitWindows} win × $20
+                                Next visit · {totalWindows} win × $20
                               </span>
                               <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>${fmtD(reviewRetailValue)}</span>
                             </div>
@@ -1023,10 +1023,10 @@ export default function JobCloseout() {
                             )}
                             {interiorsAdded > 0 && (
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "3px 0", borderBottom: "1px solid #EBF5FA" }}>
-                                <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                                <span style={{ fontSize: 7, color: "#059669", letterSpacing: "0.06em", textTransform: "uppercase" }}>
                                   Add On ({interiorsAdded} × $12.50)
                                 </span>
-                                <span style={{ fontSize: 10, color: "#0A2740", fontWeight: 600 }}>+${fmtD(reviewInteriorCarry)}</span>
+                                <span style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>−${fmtD(reviewInteriorCarry)}</span>
                               </div>
                             )}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
@@ -1265,6 +1265,7 @@ export default function JobCloseout() {
               <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 6 }}>
                 Technician Sign-Off
               </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>
                 {canShowOffer ? (
                   <>
@@ -1290,6 +1291,13 @@ export default function JobCloseout() {
                     onToggle={() => setRecurringAccepted(!recurringAccepted)}
                   />
                 )}
+              </div>
+              <button
+                onClick={() => resetFlow()}
+                style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#1278A0", background: "none", border: "1px solid #B8DCE8", borderRadius: 5, padding: "4px 10px", cursor: "pointer" }}
+              >
+                Reset
+              </button>
               </div>
             </div>
 
