@@ -6,7 +6,6 @@ export default function WorkerLogin() {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState(false);
   const [loading, setLoading]   = useState(false);
-  const [authed, setAuthed]     = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -22,16 +21,11 @@ export default function WorkerLogin() {
     if (res.ok) {
       localStorage.setItem("worker_authed", "true");
       localStorage.setItem("worker_password", password);
-      setAuthed(true);
+      router.push("/admin/job-closeout");
     } else {
       setError(true);
+      setLoading(false);
     }
-    setLoading(false);
-  };
-
-  const go = (mode: "arrive" | "complete") => {
-    localStorage.setItem("worker_mode", mode);
-    router.push("/admin/job-closeout");
   };
 
   const base: React.CSSProperties = {
@@ -42,65 +36,6 @@ export default function WorkerLogin() {
     fontFamily: "var(--font-space-grotesk), -apple-system, sans-serif",
     padding: 24,
   };
-
-  if (authed) return (
-    <div style={base}>
-      <div style={{ textAlign: "center", marginBottom: 52 }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", marginBottom: 14, fontWeight: 600 }}>
-          Simple Window Cleaning
-        </div>
-        <div style={{ fontSize: 38, fontWeight: 800, color: "white", letterSpacing: "-0.02em" }}>
-          What are you doing?
-        </div>
-        <div style={{ fontSize: 15, color: "rgba(255,255,255,0.3)", marginTop: 10 }}>
-          C.J. Vinson · logged in
-        </div>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, width: "100%", maxWidth: 600 }}>
-        {([
-          {
-            mode: "arrive" as const,
-            label: "Arrive",
-            sub: "Estimate · Work Authorization",
-            icon: "🚐",
-            color: "#2563eb",
-            border: "rgba(59,130,246,0.4)",
-          },
-          {
-            mode: "complete" as const,
-            label: "Complete",
-            sub: "Closeout · Upsell · Deposit",
-            icon: "✓",
-            color: "#16a34a",
-            border: "rgba(22,163,74,0.4)",
-          },
-        ] as const).map(({ mode, label, sub, icon, color, border }) => (
-          <button
-            key={mode}
-            onClick={() => go(mode)}
-            style={{
-              background: "rgba(255,255,255,0.04)",
-              border: `1.5px solid ${border}`,
-              borderRadius: 24, padding: "44px 24px",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 14,
-              cursor: "pointer", transition: "all 0.15s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; }}
-            onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-          >
-            <div style={{ fontSize: 42 }}>{icon}</div>
-            <div style={{ fontSize: 26, fontWeight: 800, color: "white", letterSpacing: "-0.01em" }}>
-              {label}
-            </div>
-            <div style={{ fontSize: 13, color, fontWeight: 600, letterSpacing: "0.04em" }}>
-              {sub}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
 
   return (
     <div style={base}>
