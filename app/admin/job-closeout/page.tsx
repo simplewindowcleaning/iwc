@@ -337,6 +337,7 @@ export default function JobCloseout() {
   const signOut = () => {
     localStorage.removeItem("worker_authed");
     localStorage.removeItem("worker_password");
+    localStorage.removeItem("worker_employee");
     router.push("/login");
   };
 
