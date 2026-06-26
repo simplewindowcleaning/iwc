@@ -626,12 +626,14 @@ export default function JobCloseout() {
 
             {/* Document Header */}
             <div style={{
-              padding: "12px 20px",
+              padding: "10px 20px",
               borderBottom: "1px solid #D8EFF6",
               display: "flex", justifyContent: "space-between", alignItems: "center",
               background: "#F5FBFD",
+              gap: 12,
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              {/* Left: Logo + Company */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
                 <div
                   onClick={openPromoPanel}
                   style={{
@@ -643,15 +645,44 @@ export default function JobCloseout() {
                   <img src="/icon.jpg" alt="Simple Window Cleaning" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: "#0A2740", letterSpacing: "0.01em", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#0A2740", letterSpacing: "0.01em", lineHeight: 1.2 }}>
                     Simple Window Cleaning
                   </div>
-                  <div style={{ fontSize: 8, color: "#3AAAC4", letterSpacing: "0.16em", textTransform: "uppercase", marginTop: 2 }}>
+                  <div style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.16em", textTransform: "uppercase", marginTop: 2 }}>
                     Santa Cruz · Silicon Valley · Est. 2016
                   </div>
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
+
+              {/* Center: Technician card */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                border: "1px solid #D8EFF6", borderRadius: 8, padding: "6px 12px",
+                background: "#FFFFFF", boxShadow: "0 1px 6px rgba(10,61,92,0.07)", flex: 1,
+              }}>
+                <img src="/badge.jpg" alt="Technician" style={{ width: 38, height: 38, borderRadius: 7, objectFit: "cover", objectPosition: "top", border: "1.5px solid #D8EFF6", flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 6, letterSpacing: "0.2em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", paddingBottom: 3, marginBottom: 3, borderBottom: "1px solid #EBF5FA" }}>
+                    Technician
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px 8px" }}>
+                    {[
+                      { label: "NAME",     value: techDisplayName("C.J. Vinson") },
+                      { label: "VEHICLE",  value: "2016 Ford Transit · Black" },
+                      { label: "CERT",     value: "Ladder-Free Specialist" },
+                      { label: "BG CHECK", value: "Current (1/26)" },
+                    ].map(({ label, value }) => (
+                      <div key={label} style={{ display: "flex", gap: 5, alignItems: "baseline" }}>
+                        <span style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.1em", fontWeight: 600, textTransform: "uppercase", flexShrink: 0 }}>{label}</span>
+                        <span style={{ fontSize: 8, color: "#0A2740", lineHeight: 1.3 }}>{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Service Record */}
+              <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#0A2740", letterSpacing: "0.04em", textTransform: "uppercase" }}>
                   Service Record
                 </div>
@@ -708,8 +739,8 @@ export default function JobCloseout() {
               </div>
             )}
 
-            {/* ── 3-column: Client | Transaction Module | Technician ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr 1fr", borderBottom: "1px solid #D8EFF6" }}>
+            {/* ── 2-column: Client | Transaction Module ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1.6fr", borderBottom: "1px solid #D8EFF6" }}>
 
               {/* Client */}
               <div style={{ padding: "10px 16px", borderRight: "1px solid #D8EFF6" }}>
@@ -787,33 +818,14 @@ export default function JobCloseout() {
                 </div>
               </div>
 
-              {/* Technician */}
-              <div style={{ padding: "10px 16px", display: "flex", gap: 10, alignItems: "flex-start" }}>
-                <img src="/badge.jpg" alt="Technician" style={{ width: 56, height: 56, borderRadius: 8, objectFit: "cover", objectPosition: "top", border: "2px solid #D8EFF6", flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #D8EFF6" }}>
-                    Technician
-                  </div>
-                  {[
-                    { label: "NAME",     value: techDisplayName("C.J. Vinson") },
-                    { label: "VEHICLE",  value: "2016 Ford Transit · Black" },
-                    { label: "BG CHECK", value: "Current (1/26)" },
-                    { label: "CERT",     value: "Ladder-Free Specialist" },
-                  ].map(({ label, value }) => (
-                    <div key={label} style={{ display: "flex", gap: 8, marginBottom: 4, alignItems: "flex-start" }}>
-                      <span style={{ fontSize: 7, color: "#3AAAC4", letterSpacing: "0.1em", minWidth: 48, fontWeight: 600, paddingTop: 2, textTransform: "uppercase" }}>{label}</span>
-                      <span style={{ fontSize: 13, color: "#0A2740", lineHeight: 1.35 }}>{value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* ── 2-column: Service Summary | Offer Box ── */}
             <div style={{ display: "grid", gridTemplateColumns: "2fr 3fr", borderBottom: "1px solid #D8EFF6" }}>
 
               {/* Service Summary */}
-              <div style={{ padding: "8px 10px", borderRight: "1px solid #D8EFF6" }}>
+              <div style={{ padding: "8px", borderRight: "1px solid #D8EFF6" }}>
+                <div style={{ border: "1px solid #D8EFF6", borderRadius: 7, background: "#F5FBFD", padding: "7px 10px", height: "100%", boxSizing: "border-box" }}>
                 <div style={{ fontSize: 7, letterSpacing: "0.18em", color: "#1278A0", fontWeight: 700, textTransform: "uppercase", marginBottom: 7, paddingBottom: 4, borderBottom: "1px solid #D8EFF6" }}>
                   Service Summary
                 </div>
@@ -878,6 +890,7 @@ export default function JobCloseout() {
                 ] as Array<{ label: string; value: string; underline?: boolean; valueColor?: string }>).map(({ label, value, underline, valueColor }) => (
                   <SummaryRow key={label} label={label} value={value} underline={underline} valueColor={valueColor} />
                 )))}
+                </div>
               </div>
 
               {/* Offer Box */}
