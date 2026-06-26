@@ -937,10 +937,10 @@ export default function JobCloseout() {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", paddingTop: 5 }}>
                           <div>
                             <div style={{ fontSize: 7, color: "#0A2740", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", lineHeight: 1.3 }}>
-                              Next Visit Booked Now · valid 1 year
+                              Next Visit Subtotal
                             </div>
                             <div style={{ fontSize: 6, color: "#3AAAC4", letterSpacing: "0.04em" }}>
-                              Pre-book · no deposit required
+                              Includes today&apos;s free windows + addl $2 discount
                             </div>
                           </div>
                           <div style={{ fontSize: 26, fontWeight: 900, color: "#0A3D5C", fontFamily: "Georgia,'Times New Roman',serif", lineHeight: 1 }}>
