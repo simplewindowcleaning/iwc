@@ -12,12 +12,15 @@ interface StaffProfile {
   email: string | null;
   phone_voice: string | null;
   photo_url: string | null;
+  pin: string | null;
+  role: "admin" | "worker";
   active: boolean;
 }
 
 const EMPTY: Omit<StaffProfile, "id" | "active"> = {
   name: "", provider_number: "", preferred_zip: "",
   pro_level: 1, phone_text: "", email: "", phone_voice: "", photo_url: null,
+  pin: "", role: "worker",
 };
 
 const TEAL  = "rgba(126,200,227,";
@@ -84,6 +87,7 @@ export function StaffTab({ pw }: { pw: string }) {
       preferred_zip: s.preferred_zip ?? "", pro_level: s.pro_level ?? 1,
       phone_text: s.phone_text ?? "", email: s.email ?? "",
       phone_voice: s.phone_voice ?? "", photo_url: s.photo_url,
+      pin: s.pin ?? "", role: s.role ?? "worker",
     });
   }
 
@@ -239,6 +243,22 @@ export function StaffTab({ pw }: { pw: string }) {
                 <div>
                   <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", display: "block", marginBottom: 5 }}>VOICE #</label>
                   <input style={field} value={form.phone_voice ?? ""} onChange={e => setForm(f => ({ ...f, phone_voice: e.target.value }))} placeholder="831-555-0000" />
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", display: "block", marginBottom: 5 }}>LOGIN PIN</label>
+                  <input style={field} value={form.pin ?? ""} maxLength={4}
+                    onChange={e => setForm(f => ({ ...f, pin: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                    placeholder="4 digits" inputMode="numeric" />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: "rgba(255,255,255,0.35)", display: "block", marginBottom: 5 }}>ROLE</label>
+                  <select style={{ ...field, cursor: "pointer" }} value={form.role}
+                    onChange={e => setForm(f => ({ ...f, role: e.target.value as "admin" | "worker" }))}>
+                    <option value="worker">Worker</option>
+                    <option value="admin">Admin</option>
+                  </select>
                 </div>
               </div>
             </div>
