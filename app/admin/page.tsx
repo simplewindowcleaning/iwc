@@ -126,15 +126,14 @@ export default function AdminPage() {
 
   useEffect(() => {
     const workerPw = localStorage.getItem("worker_password");
-    if (!workerPw || sessionStorage.getItem("admin_session") !== "true") {
-      router.replace("/login");
-      return;
+    if (workerPw && sessionStorage.getItem("admin_session") === "true") {
+      setPw(workerPw);
+      setRole("owner");
+      setLoggedIn(true);
+      loadData(workerPw);
     }
-    setPw(workerPw);
-    setRole("owner");
-    setLoggedIn(true);
-    loadData(workerPw);
-  }, [loadData, router]);
+    // else: stay on portal (loggedIn stays false)
+  }, [loadData]);
 
   function handleLogout() {
     sessionStorage.removeItem("admin_session");
@@ -210,7 +209,56 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   }
 
-  if (!loggedIn) return null;
+  if (!loggedIn) {
+    return (
+      <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden", fontFamily: "var(--font-space-grotesk), -apple-system, sans-serif" }}>
+        <video autoPlay muted loop playsInline
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
+          src="/bgvid.mp4" />
+        <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1 }} />
+        <div style={{
+          position: "relative", zIndex: 2, minHeight: "100vh",
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32,
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.jpg" alt="Simple Window Cleaning"
+            style={{ width: 72, height: 72, borderRadius: 18, objectFit: "cover",
+              border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.4)", marginBottom: 24 }} />
+          <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.3em", textTransform: "uppercase" as const, color: "rgba(255,255,255,0.3)", marginBottom: 8 }}>
+            Simple Window Cleaning
+          </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: "white", marginBottom: 48 }}>
+            Who are you?
+          </div>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap" as const, justifyContent: "center" }}>
+            {[
+              { label: "Dispatcher", sub: "Admin dashboard", icon: "⚡", href: "/login" },
+              { label: "Ladderless Tech", sub: "Job closeout", icon: "🪟", href: "/login" },
+            ].map(card => (
+              <button key={card.label} onClick={() => router.push(card.href)}
+                style={{
+                  background: "rgba(255,255,255,0.05)", backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.12)", borderRadius: 24,
+                  padding: "36px 40px", cursor: "pointer", textAlign: "center" as const,
+                  display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 10,
+                  transition: "all 0.2s", minWidth: 180,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; e.currentTarget.style.transform = "scale(1.03)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; e.currentTarget.style.transform = "scale(1)"; }}
+              >
+                <div style={{ fontSize: 36 }}>{card.icon}</div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "white" }}>{card.label}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>{card.sub}</div>
+              </button>
+            ))}
+          </div>
+          <div style={{ marginTop: 64, fontSize: 11, color: "rgba(255,255,255,0.1)" }}>
+            Simple Window Cleaning · Santa Cruz, CA
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const pendingReviews = completions.filter(c => c.review_status === "pending" && c.review_submitted_at);
 
