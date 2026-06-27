@@ -16,6 +16,27 @@ import type { Step } from "@/components/npc/types";
 const MapPanel = dynamic(() => import("@/components/MapPanel"), { ssr: false });
 
 function SoftLaunchModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState("");
+  const [emailConsent, setEmailConsent] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const canSubmit = email.includes("@") && emailConsent;
+
+  async function handleSignUp() {
+    if (!canSubmit) return;
+    setSaving(true);
+    try {
+      await fetch("/api/early-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch (_) {}
+    setSubmitted(true);
+    setSaving(false);
+  }
+
   return (
     <AnimatePresence>
       <motion.div
@@ -36,28 +57,104 @@ function SoftLaunchModal({ onClose }: { onClose: () => void }) {
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
         >
           <div className="h-1 w-full bg-gradient-to-r from-teal-400 via-cyan-300 to-teal-500" />
-          <div className="bg-[#07111c] px-7 py-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/25 rounded-full px-4 py-1.5 mb-5">
-              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
-              <span className="text-teal-300 text-xs font-bold tracking-widest uppercase">Soft Launch</span>
+          <div className="bg-[#07111c] px-7 py-7">
+            {/* Header */}
+            <div className="text-center mb-5">
+              <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/25 rounded-full px-4 py-1.5 mb-4">
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                <span className="text-teal-300 text-xs font-bold tracking-widest uppercase">Soft Launch</span>
+              </div>
+              <p className="text-white text-xl font-bold leading-snug mb-2">
+                You discovered something early! 🎉
+              </p>
+              <p className="text-white/60 text-sm leading-relaxed">
+                Live in <span className="text-white font-semibold">Santa Cruz</span> now.{" "}
+                <span className="text-teal-300 font-semibold">More zips Sept 15</span>,{" "}
+                <span className="text-teal-300 font-semibold">all 15 areas Oct 1</span>.
+              </p>
             </div>
-            <p className="text-white text-xl font-bold leading-snug mb-3">
-              You discovered something early! 🎉
-            </p>
-            <p className="text-white/70 text-sm leading-relaxed mb-6">
-              We&apos;re live in <span className="text-white font-semibold">Santa Cruz</span> now — feel free to book if you&apos;re local.
-              <br /><br />
-              <span className="text-white/50">More zip codes open</span>{" "}
-              <span className="text-teal-300 font-semibold">Sept 15, 2026</span>
-              <span className="text-white/50">, and all 15 service areas unlock on</span>{" "}
-              <span className="text-teal-300 font-semibold">Oct 1, 2026</span>.
-            </p>
-            <button
-              onClick={onClose}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-sm tracking-wide hover:opacity-90 transition-opacity"
-            >
-              Got it — let&apos;s book
-            </button>
+
+            {submitted ? (
+              <div className="text-center py-4">
+                <p className="text-teal-300 text-lg font-bold mb-1">You&apos;re on the list ✓</p>
+                <p className="text-white/40 text-xs">We&apos;ll reach out when your area opens.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Email field */}
+                <div>
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-teal-500/50 transition-colors"
+                  />
+                  <AnimatePresence>
+                    {email.length > 0 && (
+                      <motion.label
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-start gap-2 mt-2 cursor-pointer overflow-hidden"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={emailConsent}
+                          onChange={e => setEmailConsent(e.target.checked)}
+                          className="mt-0.5 flex-shrink-0 accent-teal-400"
+                        />
+                        <span className="text-white/40 text-xs leading-relaxed">
+                          I&apos;d like to receive launch updates and promotions from Simple Windows. Unsubscribe anytime.
+                        </span>
+                      </motion.label>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Phone field — coming soon */}
+                <div>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      placeholder="Phone number"
+                      disabled
+                      className="w-full bg-white/[0.03] border border-white/[0.06] rounded-xl px-4 py-3 text-sm text-white/20 placeholder-white/15 outline-none cursor-not-allowed"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold tracking-widest uppercase text-teal-400/50 bg-teal-400/10 px-2 py-1 rounded-full">
+                      Coming Soon
+                    </span>
+                  </div>
+                  <p className="text-white/25 text-xs mt-2 leading-relaxed px-1">
+                    SMS appointment alerts coming soon. You&apos;ll opt in at booking — msg &amp; data rates may apply, reply STOP to unsubscribe.
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <button
+                  onClick={handleSignUp}
+                  disabled={!canSubmit || saving}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-sm tracking-wide transition-opacity disabled:opacity-30 hover:opacity-90"
+                >
+                  {saving ? "Saving…" : "Notify me when my area opens"}
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-full py-2 text-white/30 text-xs hover:text-white/50 transition-colors"
+                >
+                  I&apos;m already in Santa Cruz — let&apos;s book
+                </button>
+              </div>
+            )}
+
+            {submitted && (
+              <button
+                onClick={onClose}
+                className="w-full mt-4 py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-sm tracking-wide hover:opacity-90 transition-opacity"
+              >
+                Got it — let&apos;s book
+              </button>
+            )}
           </div>
         </motion.div>
       </motion.div>
