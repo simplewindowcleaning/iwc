@@ -14,6 +14,13 @@ import { formatTime, formatDateFull, FALLBACK_DATE } from "@/lib/availability";
 import { calcPrice, MAX_WINDOWS } from "@/lib/constants";
 import SlideshowHtml from "@/components/SlideshowHtml";
 
+// Bounding box that wraps every service dot + all preview locations.
+// fitBounds auto-adjusts zoom for any viewport shape (portrait, landscape, mobile).
+const OVERVIEW_BOUNDS: [[number, number], [number, number]] = [
+  [-122.16, 36.78], // SW — past Felton, below Hollister
+  [-121.28, 37.22], // NE — past Hollister, above Morgan Hill
+];
+
 // ── Shared design tokens ──────────────────────────────────────────────────
 const TEAL = "rgba(126,200,227,";
 
@@ -244,6 +251,9 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
           markersRef.current.push(marker);
         });
 
+        // Fit all dots into view regardless of viewport shape
+        map.fitBounds(OVERVIEW_BOUNDS, { padding: 48, duration: 0, pitch: 0, bearing: 0 });
+
         setMapLoaded(true);
         setOverlaysVisible(true);
         // Clicking the map background (not the dots) opens the panel
@@ -268,14 +278,8 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
     if (!map || !mapLoaded) return;
 
     if (stepIdx === 0) {
-      // Zoom back out to service area overview
-      map.flyTo({
-        center: INITIAL_CAMERA.center,
-        zoom: INITIAL_CAMERA.zoom,
-        pitch: 0,
-        bearing: 0,
-        duration: 2200,
-      });
+      // Zoom back out to service area overview — fitBounds so all dots show in any orientation
+      map.fitBounds(OVERVIEW_BOUNDS, { padding: 48, duration: 2200, pitch: 0, bearing: 0 });
       markersRef.current.forEach((m) => {
         m.getElement().style.display = "block";
       });
