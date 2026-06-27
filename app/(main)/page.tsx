@@ -52,6 +52,14 @@ export default function HomePage() {
   const [reviewMode, setReviewMode]       = useState(false);
   const [rodeoModal, setRodeoModal] = useState(false);
   const [contactModal, setContactModal] = useState(false);
+  const [softLaunchModal, setSoftLaunchModal] = useState(false);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("soft_launch_seen")) {
+      const t = setTimeout(() => setSoftLaunchModal(true), 900);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   function initiateCheckout() { setContactModal(true); }
 
@@ -497,6 +505,64 @@ export default function HomePage() {
           onBeforeCheckout={() => setRodeoModal(true)}
         />
       </div>
+
+      {/* ── Soft-launch welcome popup ── */}
+      <AnimatePresence>
+        {softLaunchModal && (
+          <motion.div
+            className="fixed inset-0 z-[200] flex items-center justify-center p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => { setSoftLaunchModal(false); sessionStorage.setItem("soft_launch_seen", "1"); }}
+            />
+
+            {/* Card */}
+            <motion.div
+              className="relative z-10 max-w-sm w-full rounded-2xl overflow-hidden shadow-2xl"
+              initial={{ scale: 0.88, opacity: 0, y: 24 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.92, opacity: 0, y: 16 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28 }}
+            >
+              {/* Top accent bar */}
+              <div className="h-1 w-full bg-gradient-to-r from-teal-400 via-cyan-300 to-teal-500" />
+
+              <div className="bg-[#07111c] px-7 py-8 text-center">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-teal-400/10 border border-teal-400/25 rounded-full px-4 py-1.5 mb-5">
+                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+                  <span className="text-teal-300 text-xs font-bold tracking-widest uppercase">Soft Launch</span>
+                </div>
+
+                <p className="text-white text-xl font-bold leading-snug mb-3">
+                  You discovered something early! 🎉
+                </p>
+
+                <p className="text-white/70 text-sm leading-relaxed mb-6">
+                  We&apos;re live in <span className="text-white font-semibold">Santa Cruz</span> now — feel free to book if you&apos;re local.
+                  <br /><br />
+                  <span className="text-white/50">More zip codes open</span>{" "}
+                  <span className="text-teal-300 font-semibold">Sept 15, 2026</span>
+                  <span className="text-white/50">, and all 15 service areas unlock on</span>{" "}
+                  <span className="text-teal-300 font-semibold">Oct 1, 2026</span>.
+                </p>
+
+                <button
+                  onClick={() => { setSoftLaunchModal(false); sessionStorage.setItem("soft_launch_seen", "1"); }}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-500 to-cyan-500 text-white font-bold text-sm tracking-wide hover:opacity-90 transition-opacity"
+                >
+                  Got it — let&apos;s book
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
