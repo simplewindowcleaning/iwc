@@ -243,19 +243,20 @@ export function StaffTab({ pw }: { pw: string }) {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
+            <div style={{ marginTop: 24 }}>
               <button onClick={save} disabled={saving || !form.name.trim()} style={{
-                flex: 1, background: `${GREEN}0.2)`, border: `1px solid ${GREEN}0.4)`,
+                width: "100%", background: `${GREEN}0.2)`, border: `1px solid ${GREEN}0.4)`,
                 borderRadius: 10, color: `${GREEN}0.95)`, fontSize: 13, fontWeight: 700,
                 padding: "11px", cursor: "pointer", fontFamily: "inherit",
                 opacity: saving || !form.name.trim() ? 0.5 : 1,
               }}>{saving ? "Saving…" : "Save"}</button>
               {!isNew && (
-                <button onClick={remove} style={{
-                  background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
-                  borderRadius: 10, color: "rgba(239,68,68,0.7)", fontSize: 12, fontWeight: 700,
-                  padding: "11px 16px", cursor: "pointer", fontFamily: "inherit",
-                }}>Remove</button>
+                <div style={{ textAlign: "center", marginTop: 16 }}>
+                  <button onClick={remove} style={{
+                    background: "none", border: "none", color: "rgba(239,68,68,0.4)",
+                    fontSize: 11, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline",
+                  }}>Remove staff member</button>
+                </div>
               )}
             </div>
           </div>
