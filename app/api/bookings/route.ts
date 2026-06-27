@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServiceClient } from "@/lib/supabase";
+import { MIN_BOOKING_DATE } from "@/lib/availability";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -8,6 +9,23 @@ export async function POST(req: NextRequest) {
 
   if (!service_date || !service_time || !window_count) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Reject dates before the soft-launch minimum
+  if (service_date < MIN_BOOKING_DATE) {
+    return NextResponse.json({ error: "Bookings not yet open for that date" }, { status: 400 });
+  }
+
+  // Reject same-day bookings where the slot has already passed (2hr buffer)
+  const nowUtc = new Date();
+  const todayStr = nowUtc.toISOString().split("T")[0];
+  if (service_date === todayStr) {
+    const [slotH, slotM] = service_time.split(":").map(Number);
+    const slotMinutes = slotH * 60 + slotM;
+    const nowMinutes = nowUtc.getUTCHours() * 60 + nowUtc.getUTCMinutes();
+    if (slotMinutes <= nowMinutes + 120) {
+      return NextResponse.json({ error: "Not enough advance notice for same-day booking" }, { status: 400 });
+    }
   }
 
   const db = getServiceClient();

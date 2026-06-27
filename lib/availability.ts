@@ -90,11 +90,8 @@ export function buildSlotMap(
     );
     let slots = SLOT_TIMES.filter((t) => !blocked.has(t));
 
-    if (date === todayStr) {
-      slots = slots.filter((t) => {
-        const [h, m] = t.split(":").map(Number);
-        return h * 60 + m >= nowMinutes - 30;
-      });
+    if (date === todayStr || date < MIN_BOOKING_DATE) {
+      slots = [];
     }
 
     map[date] = slots;
