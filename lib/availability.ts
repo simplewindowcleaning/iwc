@@ -1,7 +1,8 @@
 import { supabase } from "./supabase";
 
-export const FALLBACK_DATE = "2026-07-04";
-export const FALLBACK_TIME = "14:00";
+export const FALLBACK_DATE = "2026-09-06";
+export const FALLBACK_TIME = "10:00";
+export const MIN_BOOKING_DATE = "2026-09-01";
 
 export const SLOT_TIMES = ["08:00", "10:00", "12:00", "14:00", "16:00"];
 
@@ -22,18 +23,32 @@ export function formatDate(dateStr: string): string {
   return d.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
 }
 
-export function getNextDays(n = 30): string[] {
+export function getNextDays(n = 60): string[] {
   const days: string[] = [];
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
+  const start = new Date(Math.max(Date.now(), new Date(MIN_BOOKING_DATE + "T00:00:00").getTime()));
+  start.setHours(0, 0, 0, 0);
   for (let i = 0; i <= n; i++) {
-    const next = new Date(d);
-    next.setDate(d.getDate() + i);
+    const next = new Date(start);
+    next.setDate(start.getDate() + i);
     days.push(next.toISOString().split("T")[0]);
   }
-  // Always include fallback date if not already present
   if (!days.includes(FALLBACK_DATE)) days.push(FALLBACK_DATE);
   return days;
+}
+
+function shiftDate(dateStr: string, days: number): string {
+  const d = new Date(dateStr + "T00:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+async function fetchBookedDates(dates: string[]): Promise<string[]> {
+  const { data } = await supabase
+    .from("bookings")
+    .select("service_date")
+    .in("service_date", dates)
+    .not("status", "in", '("cancelled")');
+  return (data ?? []).map((r: { service_date: string }) => r.service_date);
 }
 
 export async function fetchAvailability(dates: string[]) {
@@ -53,7 +68,8 @@ export async function fetchAvailability(dates: string[]) {
 
 export function buildSlotMap(
   dates: string[],
-  dbRows: { date: string; time_slot: string | null; is_blocked: boolean }[]
+  dbRows: { date: string; time_slot: string | null; is_blocked: boolean }[],
+  fullyBlockedDates: Set<string> = new Set()
 ) {
   const map: Record<string, string[]> = {};
 
@@ -62,6 +78,11 @@ export function buildSlotMap(
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
   for (const date of dates) {
+    if (fullyBlockedDates.has(date)) {
+      map[date] = [];
+      continue;
+    }
+
     const blocked = new Set(
       dbRows
         .filter((r) => r.date === date && r.is_blocked)
@@ -93,6 +114,18 @@ export function formatPhone(p: string): string {
 
 export async function getAvailableSlots() {
   const dates = getNextDays();
-  const rows = await fetchAvailability(dates);
-  return buildSlotMap(dates, rows);
+  const [rows, bookedDates] = await Promise.all([
+    fetchAvailability(dates),
+    fetchBookedDates(dates),
+  ]);
+
+  // Block the day before and after every booked date
+  const fullyBlocked = new Set<string>();
+  for (const d of bookedDates) {
+    fullyBlocked.add(d);
+    fullyBlocked.add(shiftDate(d, -1));
+    fullyBlocked.add(shiftDate(d, 1));
+  }
+
+  return buildSlotMap(dates, rows, fullyBlocked);
 }
