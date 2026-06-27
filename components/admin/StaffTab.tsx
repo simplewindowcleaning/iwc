@@ -124,13 +124,22 @@ export function StaffTab({ pw }: { pw: string }) {
   async function uploadPhoto(file: File) {
     if (!editing || isNew) return;
     setUploading(true);
-    const fd = new FormData();
-    fd.append("photo", file);
-    const res = await fetch(`/api/admin/staff/${editing.id}/photo`, { method: "POST", headers, body: fd });
-    const { url } = await res.json();
-    setForm(f => ({ ...f, photo_url: url }));
-    await load();
-    setUploading(false);
+    try {
+      const fd = new FormData();
+      fd.append("photo", file);
+      const res = await fetch(`/api/admin/staff/${editing.id}/photo`, {
+        method: "POST",
+        headers: { "x-admin-pw": pw },
+        body: fd,
+      });
+      const data = await res.json();
+      if (data.url) {
+        setForm(f => ({ ...f, photo_url: data.url }));
+        await load();
+      }
+    } finally {
+      setUploading(false);
+    }
   }
 
   const field: React.CSSProperties = {
