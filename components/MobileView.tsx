@@ -163,7 +163,7 @@ export function MobileView(props: Props) {
                 ✦ Santa Cruz County
               </div>
               <div style={{ fontSize: 30, fontWeight: 800, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.025em", lineHeight: 1.05, marginBottom: 4 }}>
-                Claude<br />Windows
+                Simple<br />Windows
               </div>
               <div style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: `${TEAL}0.45)`, marginBottom: 20 }}>
                 Instant Window Cleaning

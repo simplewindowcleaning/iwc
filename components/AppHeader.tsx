@@ -39,7 +39,7 @@ export function AppHeader() {
           <div className="flex items-center gap-1.5">
             <WindowPaneIcon />
             <span style={{ fontFamily: "var(--font-space-grotesk)", fontWeight: 700, fontSize: 17, color: "white", letterSpacing: "-0.3px" }}>
-              Claude<span style={{ color: "#a78bfa" }}>.</span>
+              Simple<span style={{ color: "#a78bfa" }}>.</span>
             </span>
           </div>
           <span style={{ fontSize: 8, letterSpacing: "1.8px", color: "rgba(255,255,255,0.28)", textTransform: "uppercase", fontWeight: 500 }}>
