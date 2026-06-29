@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       .eq("id", booking_id)
       .single();
     if (booking) {
-      resolvedName = resolvedName ?? [booking.first_name, booking.last_name].filter(Boolean).join(" ") || null;
+      resolvedName = resolvedName ?? ([booking.first_name, booking.last_name].filter(Boolean).join(" ") || null);
       resolvedAddress = resolvedAddress ?? booking.address ?? null;
     }
   }
