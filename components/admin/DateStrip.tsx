@@ -98,7 +98,7 @@ export function DateStrip({ bookings }: Props) {
                 <span style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color,
+                  color: color ?? undefined,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
