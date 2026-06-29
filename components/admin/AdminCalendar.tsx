@@ -27,15 +27,18 @@ export function AdminCalendar({ bookings, blocked, onRefresh, role = "owner", ad
     const bookingEvents = bookings.map((b) => {
       const town = isOwner ? extractTown(b.address) : null;
       const color = town ? getTownColor(town) : "#7c3aed";
+      const isHold = b.status === "hold";
       return {
         id: `booking-${b.id}`,
         title: isOwner
-          ? `${b.window_count}w — ${b.address.split(",")[0]}`
+          ? isHold
+            ? `HOLD — ${b.address.split(",")[0]}`
+            : `${b.window_count}w — ${b.address.split(",")[0]}`
           : "Busy",
         start: `${b.service_date}T${b.service_time}`,
-        backgroundColor: isOwner ? color : "#374151",
-        borderColor:     isOwner ? color : "#4b5563",
-        textColor: "#fff",
+        backgroundColor: isOwner ? (isHold ? `${color}55` : color) : "#374151",
+        borderColor:     isOwner ? (isHold ? `${color}88` : color) : "#4b5563",
+        textColor: isHold ? "rgba(255,255,255,0.5)" : "#fff",
       };
     });
 

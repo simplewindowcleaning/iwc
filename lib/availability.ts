@@ -48,16 +48,17 @@ function extractZip(address: string | null | undefined): string | null {
   return m ? m[1] : null;
 }
 
-async function fetchBookedSlots(dates: string[]): Promise<{ date: string; time: string; address: string | null }[]> {
+async function fetchBookedSlots(dates: string[]): Promise<{ date: string; time: string; address: string | null; status: string }[]> {
   const { data } = await supabase
     .from("bookings")
-    .select("service_date, service_time, address")
+    .select("service_date, service_time, address, status")
     .in("service_date", dates)
     .not("status", "in", '("cancelled")');
-  return (data ?? []).map((r: { service_date: string; service_time: string; address: string | null }) => ({
+  return (data ?? []).map((r: { service_date: string; service_time: string; address: string | null; status: string }) => ({
     date: r.service_date,
     time: (r.service_time ?? "").slice(0, 5),
     address: r.address ?? null,
+    status: r.status ?? "",
   }));
 }
 
@@ -136,8 +137,9 @@ export async function getAvailableSlots(customerZip?: string) {
   const perDateBlockedTimes: Record<string, Set<string>> = {};
 
   for (const slot of bookedSlots) {
+    const isHold = slot.status === "hold";
     const bookingZip = extractZip(slot.address);
-    const sameZip = customerZip && bookingZip && customerZip === bookingZip;
+    const sameZip = !isHold && customerZip && bookingZip && customerZip === bookingZip;
 
     if (sameZip) {
       // Same zip: only block this specific time slot, open the rest of the day

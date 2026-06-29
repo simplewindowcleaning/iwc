@@ -23,7 +23,7 @@ export function DateStrip({ bookings }: Props) {
     if (b.service_date && b.status !== "cancelled") {
       const town = extractTown(b.address);
       if (town) townByDate[b.service_date] = town;
-      if (b.total_price) priceByDate[b.service_date] = (priceByDate[b.service_date] ?? 0) + b.total_price;
+      if (b.total_price && b.status !== "hold") priceByDate[b.service_date] = (priceByDate[b.service_date] ?? 0) + b.total_price;
     }
   }
 
