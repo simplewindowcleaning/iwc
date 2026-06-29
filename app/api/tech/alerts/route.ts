@@ -31,15 +31,33 @@ export async function POST(req: NextRequest) {
   const deny = assertAdmin(req);
   if (deny) return deny;
 
-  const { booking_id, type, message, technician_name } = await req.json();
+  const { booking_id, type, message, technician_name, customer_name, address } = await req.json();
   if (!booking_id || !type) return NextResponse.json({ error: "booking_id and type required" }, { status: 400 });
 
   const supabase = getServiceClient();
+
+  // Fill in customer info from the booking if caller didn't provide it
+  let resolvedName = customer_name ?? null;
+  let resolvedAddress = address ?? null;
+  if (!resolvedName || !resolvedAddress) {
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("first_name, last_name, address")
+      .eq("id", booking_id)
+      .single();
+    if (booking) {
+      resolvedName = resolvedName ?? [booking.first_name, booking.last_name].filter(Boolean).join(" ") || null;
+      resolvedAddress = resolvedAddress ?? booking.address ?? null;
+    }
+  }
+
   const { error } = await supabase.from("tech_alerts").insert({
     booking_id,
     type,
     message: message ?? null,
     technician_name: technician_name ?? null,
+    customer_name: resolvedName,
+    address: resolvedAddress,
     windows_added: 0,
     interiors_added: 0,
     screens_added: 0,
