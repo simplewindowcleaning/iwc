@@ -15,7 +15,7 @@ import { StaffTab } from "@/components/admin/StaffTab";
 import { DateStrip } from "@/components/admin/DateStrip";
 
 
-type Tab = "calendar" | "bookings" | "data" | "ics" | "reviews" | "completions" | "settings" | "analytics" | "finance" | "chat" | "staff";
+type Tab = "calendar" | "bookings" | "data" | "ics" | "reviews" | "completions" | "settings" | "analytics" | "finance" | "chat" | "staff" | "leads";
 
 interface GigCompletion {
   id: string;
@@ -68,6 +68,19 @@ export default function AdminPage() {
   const pending   = bookings.filter(b => b.status === "pending");
   const batched   = bookings.filter(b => b.status === "batched");
   const prebooked = bookings.filter(b => b.status === "prebooked");
+
+  // Leads: prebooks/lead_pending expiring within the 17-day warning window
+  const [contactingLead, setContactingLead] = useState<string | null>(null);
+  function daysUntilCancel(b: Booking): number {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = Math.round((new Date(b.service_date + "T00:00:00").getTime() - today.getTime()) / 86400000);
+    return days - (b.status === "lead_pending" ? 13 : 14);
+  }
+  const leads = bookings.filter(b => {
+    if (b.status !== "prebooked" && b.status !== "lead_pending") return false;
+    const d = daysUntilCancel(b);
+    return d <= 3 && d >= -1;
+  });
 
   const loadData = useCallback(async (password: string) => {
     const h = adminHeader(password);
@@ -274,6 +287,7 @@ export default function AdminPage() {
     { id: "finance",    label: "Finance" },
     { id: "chat",       label: "Chat" },
     { id: "staff",      label: "Staff" },
+    { id: "leads",      label: `Leads${leads.length ? ` (${leads.length})` : ""}` },
   ];
 
   const S: Record<string, React.CSSProperties> = {
@@ -1066,6 +1080,99 @@ export default function AdminPage() {
 
           {/* ── Staff ── */}
           {tab === "staff" && <StaffTab pw={pw} />}
+
+          {/* ── Leads ── */}
+          {tab === "leads" && (
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "rgba(255,255,255,0.25)", marginBottom: 16 }}>
+                EXPIRING LEADS — PREBOOKS AUTO-CANCEL AT 14 DAYS
+              </div>
+
+              {leads.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0", color: "rgba(255,255,255,0.2)", fontSize: 13 }}>
+                  No leads yet — prebooks will start appearing here about 3 days before they expire.<br />
+                  <span style={{ fontSize: 11, marginTop: 6, display: "block" }}>Check back in about a year when the first prebooks hit their window.</span>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {leads.sort((a, b) => a.service_date.localeCompare(b.service_date)).map(b => {
+                    const d = daysUntilCancel(b);
+                    const urgencyColor = d <= 0 ? "#f43f5e" : d === 1 ? "#f59e0b" : "#34d399";
+                    const contacted = b.status === "lead_pending";
+                    return (
+                      <div key={b.id} style={{
+                        background: "rgba(255,255,255,0.03)",
+                        border: `1px solid ${urgencyColor}33`,
+                        borderLeft: `3px solid ${urgencyColor}`,
+                        borderRadius: 12, padding: "14px 16px",
+                        display: "flex", alignItems: "center", gap: 14,
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
+                            {b.first_name} {b.last_name}
+                          </div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            {b.address}
+                          </div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+                            {new Date(b.service_date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                            {" · "}{b.window_count}w · ${b.total_price}
+                            {b.phone && <span style={{ marginLeft: 8, color: "rgba(255,255,255,0.2)" }}>{b.phone}</span>}
+                          </div>
+                        </div>
+
+                        <div style={{ textAlign: "right", flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: urgencyColor }}>
+                            {d <= 0 ? "Cancels today" : `${d}d left`}
+                          </div>
+
+                          {contacted ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                              <span style={{ fontSize: 10, color: "rgba(126,200,227,0.6)", letterSpacing: "0.05em" }}>TEXTED · +1 day</span>
+                              <button
+                                onClick={async () => {
+                                  await fetch("/api/admin/leads/contact", {
+                                    method: "POST", headers: adminHeader(pw),
+                                    body: JSON.stringify({ booking_id: b.id, action: "confirm" }),
+                                  });
+                                  loadData(pw);
+                                }}
+                                style={{ fontSize: 11, fontWeight: 700, color: "#34d399", background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 8, padding: "4px 10px", cursor: "pointer" }}
+                              >
+                                Mark Confirmed
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              disabled={contactingLead === b.id || !b.phone}
+                              onClick={async () => {
+                                setContactingLead(b.id);
+                                await fetch("/api/admin/leads/contact", {
+                                  method: "POST", headers: adminHeader(pw),
+                                  body: JSON.stringify({ booking_id: b.id, action: "contact" }),
+                                });
+                                setContactingLead(null);
+                                loadData(pw);
+                              }}
+                              style={{
+                                fontSize: 11, fontWeight: 700,
+                                color: b.phone ? "#7ec8e3" : "rgba(255,255,255,0.2)",
+                                background: b.phone ? "rgba(126,200,227,0.1)" : "transparent",
+                                border: `1px solid ${b.phone ? "rgba(126,200,227,0.3)" : "rgba(255,255,255,0.08)"}`,
+                                borderRadius: 8, padding: "4px 10px", cursor: b.phone ? "pointer" : "default",
+                              }}
+                            >
+                              {contactingLead === b.id ? "Sending…" : b.phone ? "Text & Extend" : "No phone"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           </div>
           )}{/* end non-calendar constrained wrapper */}
