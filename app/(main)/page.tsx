@@ -24,7 +24,7 @@ export default function HomePage() {
   const [selectedTime, setSelectedTime] = useState(FALLBACK_TIME);
   const [needsEstimate, setNeedsEstimate] = useState(false);
   const [estimateDeadline, setEstimateDeadline] = useState("");
-  const [windowCount, setWindowCount] = useState(1);
+  const [windowCount, setWindowCount] = useState(5);
   const [address, setAddress] = useState("Santa Cruz, CA 95060");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

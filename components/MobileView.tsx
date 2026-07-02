@@ -111,7 +111,7 @@ export function MobileView(props: Props) {
   }
 
   const stepIdx    = STEP_ORDER.indexOf(mobileStep);
-  const minWindows = SERVICE_AREAS[props.selectedZip]?.minWindows ?? 1;
+  const minWindows = SERVICE_AREAS[props.selectedZip]?.minWindows ?? 5;
   const photoSet   = Math.min(4, Math.max(1, props.windowCount));
   const photos     = EXAMPLE_SETS[photoSet] ?? EXAMPLE_SETS[4];
 

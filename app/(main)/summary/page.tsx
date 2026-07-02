@@ -17,7 +17,7 @@ function SummaryContent() {
 
   const date = params.get("date") ?? "";
   const time = params.get("time") ?? "";
-  const windows = Number(params.get("windows") ?? 1);
+  const windows = Number(params.get("windows") ?? 5);
   const address = params.get("address") ?? "";
   const firstName = params.get("firstName") ?? "";
   const lastName = params.get("lastName") ?? "";
@@ -27,7 +27,7 @@ function SummaryContent() {
   const needsEstimate = params.get("needsEstimate") === "true";
   const estimateDeadline = params.get("estimateDeadline") ?? "";
   const zip = params.get("zip") ?? "95060";
-  const minWindows = SERVICE_AREAS[zip]?.minWindows ?? 1;
+  const minWindows = SERVICE_AREAS[zip]?.minWindows ?? 5;
   const baseTotal = calcPrice(windows, minWindows);
 
   const [submitting, setSubmitting] = useState(false);
@@ -137,7 +137,8 @@ function SummaryContent() {
         >
           <Row label="Date" value={formatDate(date)} />
           <Row label="Time" value={formatTime(time)} />
-          <Row label="Windows" value={`${windows}`} />
+          <Row label="Windows" value={`${windows + 1} total`} />
+          <Row label="" value={`${windows} exterior · 1 interior (free)`} />
           <Row label="Address" value={address} />
           {(firstName || lastName) && <Row label="Name" value={`${firstName} ${lastName}`.trim()} />}
           {phone && <Row label="Phone" value={formatPhone(phone)} />}

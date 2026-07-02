@@ -157,7 +157,7 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
   useEffect(() => {
     if (stepIdx < 1) return;
     if (initializedForZipRef.current === zip) return;
-    const min = SERVICE_AREAS[zip]?.minWindows ?? 1;
+    const min = SERVICE_AREAS[zip]?.minWindows ?? 5;
     onWindowCountChange?.(min);
     initializedForZipRef.current = zip;
   }, [stepIdx, zip]);
@@ -392,7 +392,7 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
               date={date} time={time} slotMap={slotMap}
               onDateChange={onDateChange} onTimeChange={onTimeChange}
               windowCount={windowCount}
-              minWindows={SERVICE_AREAS[zip]?.minWindows ?? 1}
+              minWindows={SERVICE_AREAS[zip]?.minWindows ?? 5}
               onWindowCountChange={n => onWindowCountChange?.(n)}
               promoCode={promoCode}
               onPromoCodeChange={onPromoCodeChange}
@@ -479,7 +479,7 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
       {/* Marketing overlays — photos and summary in map center */}
       <AnimatePresence mode="wait">
         {overlay === "photos" && (
-          <PhotosOverlay key="photos" windowCount={windowCount} minWindows={SERVICE_AREAS[zip]?.minWindows ?? 1} />
+          <PhotosOverlay key="photos" windowCount={windowCount} minWindows={SERVICE_AREAS[zip]?.minWindows ?? 5} />
         )}
         {overlay === "summary" && (
           <SummaryOverlay
@@ -922,7 +922,7 @@ function SummaryOverlay({ date, time, windowCount, needsEstimate, zip, step }: {
     { label: "Location", value: area ? `${area.name}, CA ${zip}` : zip },
     { label: "Date",     value: date ? formatDateFull(date) : "July 4, 2026" },
     { label: "Time",     value: time ? formatTime(time)    : "2:50 PM" },
-    { label: "Windows",  value: `${windowCount} — $${calcPrice(windowCount, area?.minWindows ?? 1)}` },
+    { label: "Windows",  value: `${windowCount} — $${calcPrice(windowCount, area?.minWindows ?? 5)}` },
     ...(step === "complete"
       ? [{ label: "Service", value: needsEstimate ? "Full estimate" : "Windows only" }]
       : []),
