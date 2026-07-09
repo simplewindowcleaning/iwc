@@ -24,6 +24,7 @@ function SummaryContent() {
   const phone = params.get("phone") ?? "";
   const email = params.get("email") ?? "";
   const notes = params.get("notes") ?? "";
+  const smsConsent = params.get("smsConsent") === "true";
   const needsEstimate = params.get("needsEstimate") === "true";
   const estimateDeadline = params.get("estimateDeadline") ?? "";
   const zip = params.get("zip") ?? "95060";
@@ -78,6 +79,7 @@ function SummaryContent() {
         phone: phone || null,
         email: email || null,
         notes: notes || null,
+        sms_consent: smsConsent,
         needs_estimate: needsEstimate,
         estimate_deadline: estimateDeadline || null,
         total_price: total,

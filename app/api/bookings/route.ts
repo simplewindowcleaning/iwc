@@ -5,7 +5,7 @@ import { MIN_BOOKING_DATE } from "@/lib/availability";
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { service_date, service_time, window_count, address, first_name, last_name,
-          phone, email, notes, needs_estimate, estimate_deadline, total_price } = body;
+          phone, email, notes, sms_consent, needs_estimate, estimate_deadline, total_price } = body;
 
   if (!service_date || !service_time || !window_count) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
     phone: phone || null,
     email: email || null,
     notes: notes || null,
+    sms_consent: Boolean(sms_consent),
     needs_estimate: Boolean(needs_estimate),
     estimate_deadline: estimate_deadline || null,
     total_price,

@@ -13,18 +13,24 @@ export default function SMSConsentPage() {
         <section style={{ marginBottom: 32 }}>
           <h2 style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12 }}>How We Collect Consent</h2>
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
-            Customers provide their mobile phone number and check an explicit SMS consent checkbox during the online booking process at{" "}
+            Customers provide their mobile phone number during the online booking process at{" "}
             <a href="https://www.simplewindowcleaning.com" style={{ color: "rgba(126,200,227,0.8)" }}>simplewindowcleaning.com</a>{" "}
             (also accessible at <a href="https://iwc-ivory.vercel.app" style={{ color: "rgba(126,200,227,0.8)" }}>iwc-ivory.vercel.app</a>).
-            Customers must actively check the following checkbox before proceeding to checkout:
+            On the contact step of checkout (&ldquo;How should we reach you?&rdquo;), directly below the mobile number field,
+            customers may check an explicit SMS consent checkbox with the following exact language:
           </p>
           <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-              "By checking this box, I agree to receive text message appointment updates from Simple Windows. Msg &amp; data rates may apply. Reply STOP to unsubscribe."
+              &ldquo;I agree to receive SMS text messages from Simple Window Cleaning about my appointment — on-the-way,
+              arrival, and job-completion updates. Consent is not a condition of purchase. Msg &amp; data rates may apply,
+              message frequency varies. Reply STOP to unsubscribe or HELP for help.&rdquo;
             </p>
           </div>
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
-            The checkbox is unchecked by default. Customers cannot proceed to checkout without checking it. No SMS consent is collected via any other method.
+            The checkbox is unchecked by default and is optional — consent is not required to book service.
+            Customers who do not check the box receive no text messages and are contacted by email only.
+            This checkbox is separate from acceptance of our Terms of Service and Privacy Policy, which are
+            linked directly beneath it on the same screen. No SMS consent is collected via any other method.
           </p>
         </section>
 
@@ -53,7 +59,7 @@ export default function SMSConsentPage() {
         </section>
 
         <p style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, marginBottom: 16 }}>
-          Last updated: June 2026
+          Last updated: July 2026
         </p>
         <div style={{ display: "flex", gap: 20 }}>
           <a href="/privacy" style={{ color: "rgba(126,200,227,0.5)", fontSize: 12 }}>Privacy Policy</a>

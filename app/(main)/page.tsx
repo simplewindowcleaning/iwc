@@ -30,6 +30,7 @@ export default function HomePage() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [smsConsent, setSmsConsent] = useState(false);
   const [notes, setNotes] = useState("");
 
   const [promoCode, setPromoCode]       = useState("");
@@ -72,6 +73,7 @@ export default function HomePage() {
       windows: String(windowCount),
       zip: selectedZip,
       address, firstName, lastName, phone, email, notes,
+      smsConsent: String(smsConsent),
       needsEstimate: String(needsEstimate),
       estimateDeadline,
       ...extra,
@@ -323,9 +325,27 @@ export default function HomePage() {
                 }}
               />
 
-              {/* SMS consent */}
-              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", lineHeight: 1.6, marginBottom: 20, marginTop: -8 }}>
-                By providing your mobile number you agree to receive service notifications via SMS (dispatch updates, arrival alerts, job-complete confirmations). Msg &amp; data rates may apply. Reply STOP to opt out at any time.
+              {/* SMS consent — explicit opt-in checkbox, unchecked by default (Twilio TFV requirement) */}
+              <label style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", marginBottom: 8, marginTop: -8 }}>
+                <input
+                  type="checkbox"
+                  checked={smsConsent}
+                  onChange={e => setSmsConsent(e.target.checked)}
+                  style={{ marginTop: 2, flexShrink: 0, accentColor: "rgba(126,200,227,0.9)", width: 15, height: 15 }}
+                />
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+                  I agree to receive SMS text messages from Simple Window Cleaning about my
+                  appointment — on-the-way, arrival, and job-completion updates. Consent is not
+                  a condition of purchase. Msg &amp; data rates may apply, message frequency varies.
+                  Reply STOP to unsubscribe or HELP for help.
+                </span>
+              </label>
+              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", lineHeight: 1.6, marginBottom: 20, paddingLeft: 25 }}>
+                See our{" "}
+                <a href="/privacy" target="_blank" style={{ color: "rgba(126,200,227,0.6)" }}>Privacy Policy</a>
+                {" "}and{" "}
+                <a href="/terms" target="_blank" style={{ color: "rgba(126,200,227,0.6)" }}>Terms of Service</a>.
+                If unchecked, we&apos;ll only contact you by email.
               </p>
 
               {/* Text benefits */}
@@ -409,7 +429,6 @@ export default function HomePage() {
           onGo={() => setGoTrigger(t => t + 1)}
           onStepChange={setActiveStep}
           onGoToSummary={initiateCheckout}
-          onBeforeCheckout={() => setRodeoModal(true)}
         />
       </div>
 
