@@ -30,7 +30,26 @@ export default function SMSConsentPage() {
             The checkbox is unchecked by default and is optional — consent is not required to book service.
             Customers who do not check the box receive no text messages and are contacted by email only.
             This checkbox is separate from acceptance of our Terms of Service and Privacy Policy, which are
-            linked directly beneath it on the same screen. No SMS consent is collected via any other method.
+            linked directly beneath it on the same screen.
+          </p>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7, marginTop: 16 }}>
+            SMS consent is also collected on the{" "}
+            <a href="https://www.simplewindowcleaning.com" style={{ color: "rgba(126,200,227,0.8)" }}>simplewindowcleaning.com</a>{" "}
+            homepage soft-launch sign-up form, where visitors may optionally provide a mobile number and check a
+            separate consent checkbox with the following exact language:
+          </p>
+          <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
+              &ldquo;I agree to receive SMS text messages from Simple Window Cleaning, including a notification
+              when my area opens and appointment updates (on-the-way, arrival, and job completion). Consent is
+              not a condition of purchase. Msg &amp; data rates may apply, message frequency varies. Reply STOP
+              to unsubscribe or HELP for help.&rdquo;
+            </p>
+          </div>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
+            This checkbox is likewise unchecked by default and optional — an email address alone is sufficient
+            to join the list. Our Privacy Policy and Terms of Service are linked at the bottom of the same form.
+            No SMS consent is collected via any other method.
           </p>
         </section>
 
