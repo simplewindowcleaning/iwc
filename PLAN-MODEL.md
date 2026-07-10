@@ -111,6 +111,10 @@ Per-window qualification planted before the quote → itemized exclusions land a
 - **Windogram / Ladderless** = unchanged; national fulfillment + hardware/standards entities
 - Naming test: does it imply *someone else, on a rhythm*?
 
+## Upsell Ladder (July 2026 refinement)
+
+On-site upsell is binary: **take a Plan, or it's standard online booking from here.** No counteroffers in person. If they decline the plan, the "next offer deal" arrives later **by email**: commit to annual cadence and keep the first-visit deal locked on (at least) the windows originally booked. Ladder: Plan (~half) → Annual next-offer (first-visit deal, locked) → Online at $20 flat. Each rung is honest and strictly worse than the one above, so the plan sells itself. The next-offer email is the first concrete SendGrid use case.
+
 ## Open Decisions
 
 1. Per-window-billed vs. flat-monthly plan billing (lean: itemized quote, flat card)
