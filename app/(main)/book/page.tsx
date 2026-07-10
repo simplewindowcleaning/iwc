@@ -10,7 +10,7 @@ const cards = [
     num: '01',
     label: 'How this works',
     headline: 'SIMPLE WINDOWS.',
-    sub: '$20 each, any story of the house. Instant booking, automated pricing. Done.',
+    sub: '$20 each, 1st and 2nd story. Screens cleaned free. Instant Booking. Done. (Add more or start a Plan)',
     color: '#00C4E8',
   },
   {
