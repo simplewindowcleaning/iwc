@@ -30,26 +30,8 @@ export default function SMSConsentPage() {
             The checkbox is unchecked by default and is optional — consent is not required to book service.
             Customers who do not check the box receive no text messages and are contacted by email only.
             This checkbox is separate from acceptance of our Terms of Service and Privacy Policy, which are
-            linked directly beneath it on the same screen.
-          </p>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7, marginTop: 16 }}>
-            SMS consent is also collected on the{" "}
-            <a href="https://www.simplewindowcleaning.com" style={{ color: "rgba(126,200,227,0.8)" }}>simplewindowcleaning.com</a>{" "}
-            homepage soft-launch sign-up form. This consent covers a single informational use case — a
-            one-time alert when service opens in the visitor&apos;s area — via a checkbox with the following
-            exact language:
-          </p>
-          <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
-            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-              &ldquo;I agree to receive SMS messages from Simple Window Cleaning about service availability
-              in my area. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to
-              opt out, HELP for help.&rdquo;
-            </p>
-          </div>
-          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
-            This checkbox is likewise unchecked by default and optional — an email address alone is sufficient
-            to join the list. Our Terms of Service and Privacy Policy are linked directly on the same form.
-            No SMS consent is collected via any other method, and no marketing text messages are sent.
+            linked directly beneath it on the same screen. No SMS consent is collected via any other method,
+            and no marketing text messages are sent.
           </p>
         </section>
 
@@ -59,7 +41,6 @@ export default function SMSConsentPage() {
             <li>Crew en-route notification when a technician is on the way</li>
             <li>Arrival notification when the crew reaches the property</li>
             <li>Job-complete confirmation with a link to leave a review</li>
-            <li>One-time service-area opening alert (only for sign-ups requesting it)</li>
           </ul>
         </section>
 

@@ -333,18 +333,18 @@ export default function HomePage() {
                   onChange={e => setSmsConsent(e.target.checked)}
                   style={{ marginTop: 2, flexShrink: 0, accentColor: "rgba(126,200,227,0.9)", width: 15, height: 15 }}
                 />
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.72)", lineHeight: 1.6 }}>
                   I agree to receive SMS text messages from Simple Window Cleaning about my
                   appointment — on-the-way, arrival, and job-completion updates. Consent is not
                   a condition of purchase. Msg &amp; data rates may apply, message frequency varies.
                   Reply STOP to unsubscribe or HELP for help.
                 </span>
               </label>
-              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", lineHeight: 1.6, marginBottom: 20, paddingLeft: 25 }}>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.6, marginBottom: 20, paddingLeft: 25 }}>
                 See our{" "}
-                <a href="/privacy" target="_blank" style={{ color: "rgba(126,200,227,0.6)" }}>Privacy Policy</a>
+                <a href="/privacy" target="_blank" style={{ color: "rgba(126,200,227,0.85)" }}>Privacy Policy</a>
                 {" "}and{" "}
-                <a href="/terms" target="_blank" style={{ color: "rgba(126,200,227,0.6)" }}>Terms of Service</a>.
+                <a href="/terms" target="_blank" style={{ color: "rgba(126,200,227,0.85)" }}>Terms of Service</a>.
                 If unchecked, we&apos;ll only contact you by email.
               </p>
 
