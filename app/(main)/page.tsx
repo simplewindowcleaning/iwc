@@ -281,8 +281,8 @@ export default function HomePage() {
                 boxShadow: "0 24px 80px rgba(0,0,0,0.7)",
               }}
             >
-              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(126,200,227,0.45)", marginBottom: 12 }}>
-                Almost there
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(126,200,227,0.65)", marginBottom: 12 }}>
+                Simple Window Cleaning
               </div>
               <div style={{ fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,0.95)", letterSpacing: "-0.02em", marginBottom: 8, lineHeight: 1.15 }}>
                 How should we reach you?
