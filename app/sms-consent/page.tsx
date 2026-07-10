@@ -41,9 +41,9 @@ export default function SMSConsentPage() {
           </p>
           <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-              &ldquo;I consent to receive an informational text message from Simple Window Cleaning when
-              service opens in my area. Message &amp; data rates may apply. Reply STOP to opt out,
-              text HELP for assistance.&rdquo;
+              &ldquo;I agree to receive SMS messages from Simple Window Cleaning about service availability
+              in my area. Message frequency varies. Msg &amp; data rates may apply. Reply STOP to
+              opt out, HELP for help.&rdquo;
             </p>
           </div>
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
