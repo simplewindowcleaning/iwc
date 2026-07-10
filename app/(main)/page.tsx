@@ -55,6 +55,11 @@ export default function HomePage() {
   const [reviewMode, setReviewMode]       = useState(false);
   const [contactModal, setContactModal] = useState(false);
 
+  // Public deep link to the SMS opt-in screen for Twilio TFV review
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("optin") === "1") setContactModal(true);
+  }, []);
+
   function initiateCheckout() { setContactModal(true); }
 
   function handleGoToReview() {
