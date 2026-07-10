@@ -35,28 +35,21 @@ export default function SMSConsentPage() {
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7, marginTop: 16 }}>
             SMS consent is also collected on the{" "}
             <a href="https://www.simplewindowcleaning.com" style={{ color: "rgba(126,200,227,0.8)" }}>simplewindowcleaning.com</a>{" "}
-            homepage soft-launch sign-up form, where visitors may optionally provide a phone number and check
-            two separate consent checkboxes — one for marketing messages and one for non-marketing appointment
-            updates — with the following exact language:
+            homepage soft-launch sign-up form. This consent covers a single informational use case — a
+            one-time alert when service opens in the visitor&apos;s area — via a checkbox with the following
+            exact language:
           </p>
           <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
             <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-              &ldquo;I consent to receive marketing text messages from Simple Window Cleaning at the phone
-              number provided, including a notification when my area opens. Frequency may vary.
-              Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.&rdquo;
-            </p>
-          </div>
-          <div style={{ margin: "16px 0", padding: "16px 20px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
-            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
-              &ldquo;I consent to receive non-marketing text messages from Simple Window Cleaning about my
-              appointments, such as on-the-way, arrival, and job-completion updates.
-              Message &amp; data rates may apply.&rdquo;
+              &ldquo;I consent to receive an informational text message from Simple Window Cleaning when
+              service opens in my area. Message &amp; data rates may apply. Reply STOP to opt out,
+              text HELP for assistance.&rdquo;
             </p>
           </div>
           <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 14, lineHeight: 1.7 }}>
-            Both checkboxes are unchecked by default and optional — an email address alone is sufficient
+            This checkbox is likewise unchecked by default and optional — an email address alone is sufficient
             to join the list. Our Terms of Service and Privacy Policy are linked directly on the same form.
-            No SMS consent is collected via any other method.
+            No SMS consent is collected via any other method, and no marketing text messages are sent.
           </p>
         </section>
 
@@ -66,6 +59,7 @@ export default function SMSConsentPage() {
             <li>Crew en-route notification when a technician is on the way</li>
             <li>Arrival notification when the crew reaches the property</li>
             <li>Job-complete confirmation with a link to leave a review</li>
+            <li>One-time service-area opening alert (only for sign-ups requesting it)</li>
           </ul>
         </section>
 
