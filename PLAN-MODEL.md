@@ -115,6 +115,8 @@ Per-window qualification planted before the quote → itemized exclusions land a
 
 On-site upsell is binary: **take a Plan, or it's standard online booking from here.** No counteroffers in person. If they decline the plan, the "next offer deal" arrives later **by email**: commit to annual cadence and keep the first-visit deal locked on (at least) the windows originally booked. Ladder: Plan (~half) → Annual next-offer (first-visit deal, locked) → Online at $20 flat. Each rung is honest and strictly worse than the one above, so the plan sells itself. The next-offer email is the first concrete SendGrid use case.
 
+The email requires nothing from the customer — no acceptance, no commitment. Core copy: "this same deal is locked in and you'll get reminders — would you like to see the plan you can consider?" Deal locked + reminders = retention by default; the plan link rides along as a soft P.S. ("your windows already qualified on our visit").
+
 ## Open Decisions
 
 1. Per-window-billed vs. flat-monthly plan billing (lean: itemized quote, flat card)
