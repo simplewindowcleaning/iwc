@@ -8,30 +8,30 @@ import HomePage from '../page'
 const cards = [
   {
     num: '01',
-    label: 'We know this is different',
-    headline: 'JUST WINDOWS.',
-    sub: 'Exterior only. Automated pricing for average families and renters. No gutters, no solar, no confusion.',
+    label: 'How this works',
+    headline: 'SIMPLE WINDOWS.',
+    sub: '$20 each, any story of the house. Instant booking, automated pricing. Done.',
     color: '#00C4E8',
   },
   {
     num: '02',
-    label: 'What changes for you',
-    headline: 'AVAILABLE NOW.',
-    sub: 'Exteriors fast, then automated — not 2–3 months out. Interiors handled separately by our vetted affiliate.',
+    label: 'Where everyone starts',
+    headline: '5 EXTERIORS MIN.',
+    sub: 'Every first visit books at least 5 exterior windows — that’s how we get the process started and get eyes on your glass.',
     color: '#FFB020',
   },
   {
     num: '03',
-    label: 'Why switch',
-    headline: 'SAVES YOU TIME.',
-    sub: 'Seamless booking for regular maintenance. The more often you book, the lower your cost per window.',
+    label: 'Where it goes',
+    headline: 'PLANS FROM THERE.',
+    sub: 'Regular visits are easier work, so plans run about half the standard rate. Your first clean tells us which of your windows qualify.',
     color: '#00D97E',
   },
 ]
 
 function RodeoOverlay() {
   const params = useSearchParams()
-  const [open, setOpen] = useState(params.get('ref') === 'sw')
+  const [open, setOpen] = useState(params.get('ref') === 'sw' || params.get('ref') === 'plans')
 
   return (
     <AnimatePresence>
