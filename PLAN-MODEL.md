@@ -7,6 +7,8 @@
 
 ## The Reframe
 
+**The whole model in four words — INTERNAL ONLY, never customer-facing: "Interiors free for regulars."** Exterior is the $20 product; interior is the loyalty currency, reachable only by rhythm. Every mechanism below is an implementation detail of that sentence. The customer experiences this truth (inside-and-out on visit one, renewed by rhythm) but is never handed the sentence — spoken, it's a coupon; unspoken, it's a relationship. Files with "underfilled"/"soil rate" as internal language.
+
 Simple Window Cleaning is not an "instant booking, exterior-only" company. Instant booking is a feature. The model is **affordable regularity through itemization and repeatable access**, with automation as the cost accelerant, not the customer promise.
 
 Exterior vs. interior no longer defines the product line. Two variables define everything:
@@ -119,6 +121,18 @@ Per-window qualification planted before the quote → itemized exclusions land a
 On-site upsell is binary: **take a Plan, or it's standard online booking from here.** No counteroffers in person. If they decline the plan, the "next offer deal" arrives later **by email**: commit to annual cadence and keep the first-visit deal locked on (at least) the windows originally booked. Ladder: Plan (~half) → Annual next-offer (first-visit deal, locked) → Online at $20 flat. Each rung is honest and strictly worse than the one above, so the plan sells itself. The next-offer email is the first concrete SendGrid use case.
 
 The email requires nothing from the customer — no acceptance, no commitment. Core copy: "this same deal is locked in and you'll get reminders — would you like to see the plan you can consider?" Deal locked + reminders = retention by default; the plan link rides along as a soft P.S. ("your windows already qualified on our visit").
+
+## First-Visit Economics Defense
+
+The $100 in-and-out first visit is acquisition cost, not a price — it only loses money if plan conversion stays at zero. The metric is plan conversion rate, not first-visit volume. Fences:
+
+1. **"First-Year Special" framing** — the generous first visit (interior included) is explicitly a founding-year promotion. Pre-authorizes future tightening (a special ends; prices don't "go up"), makes "locked in" mean founding-customer status, and creates honest urgency. Clock aligns with the launch narrative (soft launch → all areas Oct 1).
+2. **Once per address** — first-visit treatment is enforced by address lookup in bookings (data already exists).
+3. **The locked deal = the RATE, never free interior.** The next-offer email locks $20 flat on the original windows against future increases. Recurring interior is purchasable ONLY as a plan — if the lock included in-and-out, it would undercut the entire plan ladder.
+4. **Calendar as throttle** — control first-visit slots per week; surging demand becomes wait time (reads as popularity), not price panic.
+5. **Grandfather loudly** — when floors rise for new addresses, locked customers keep theirs and get told so ("prices went up, yours didn't" — the strongest retention email in existence).
+6. **The deal is earned annually, one law system-wide: your rate reflects your rhythm.** Book every year → the founding deal stays. Miss a year → the special quietly expires; standard $20 flat is the landing pad (no punitive mechanics, no 1-window caps — a lapsed customer is recoverable, an insulted one is gone).
+7. **No account walls.** Address + email from the booking IS the account — deal tracking, lapse detection, and once-per-address enforcement all run on data already collected. If customers ever need to see their status, a passwordless magic-link page — never a signup gate on Instant Booking.
 
 ## Open Decisions
 
