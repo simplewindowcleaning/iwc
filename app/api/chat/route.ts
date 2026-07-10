@@ -68,6 +68,7 @@ COMMON QUESTIONS:
 - "Do you use ladders?" — Rarely needed. Our water-fed pole system handles 1st and 2nd story without ladders.
 - "How long does it take?" — 30–90 minutes for most exterior jobs. Interior adds a bit more time (squeegee technique).
 - "Do I need to be home?" — Yes for the first visit — the tech needs interior access and will walk the process with you. After that, standard exterior visits can often be done without you home.
+- "Can I just get the street-side windows done for a holiday?" (or any partial/one-off exterior request) — Yes! We're happy to do an exact-time visit like that at the normal rate, if you catch the availability on the calendar. Each window is the standard per-window price. And if the worker has time on-site, feel free to ask them to add interior at the same rate.
 - "What if it rains?" — We'll reach out to reschedule. The booking system has options for weather and other reschedule needs.
 - "Can I get a free quote?" — No free estimate appointments. Book your first visit, the tech assesses on arrival, and you can add windows on the spot. Everything you booked always gets cleaned regardless.
 - "What if the window I want doesn't qualify?" — If a window doesn't fit the standard service (too large, too high, over a roof section), the tech will clean a qualifying window instead. Standard windows are under 25 sq ft of glass and reachable on 1st or 2nd story.
