@@ -22,7 +22,7 @@ export async function OPTIONS(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const headers = corsHeaders(req);
   const body = await req.json().catch(() => ({}));
-  const { email, phone, sms_consent, email_consent } = body;
+  const { email, phone, full_name, sms_consent, sms_marketing_consent, email_consent } = body;
 
   if (!email || !String(email).includes("@")) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400, headers });
@@ -34,7 +34,9 @@ export async function POST(req: NextRequest) {
     .upsert({
       email: String(email).toLowerCase().trim(),
       phone: phone ? String(phone).replace(/\D/g, "") : null,
+      full_name: full_name ? String(full_name).trim() : null,
       sms_consent: Boolean(sms_consent),
+      sms_marketing_consent: Boolean(sms_marketing_consent),
       email_consent: Boolean(email_consent),
     }, { onConflict: "email" });
 
