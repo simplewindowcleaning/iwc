@@ -179,6 +179,9 @@ src/
 - **Review flow must stay FTC/Google ToS compliant** — no auto-submit, no fabricated text
 - The Expo app routing through Next.js API is intentional — do not add direct Supabase calls to the Expo app
 
+## Brand Positioning (July 2026 pivot) — READ PLAN-MODEL.md
+"Exterior only" positioning is DEAD. New theme: **"Simple Windows. $20 each. Instant Booking. Done."** with four subscription plans (Birdhouse / Active / Guests / Second) siloed under "Simple Window Cleaning Plans." Full strategy, pricing logic, language rules, and systems implications: `PLAN-MODEL.md` in this repo. Status: concept locked, pre-implementation — don't rewrite existing site copy until Chris green-lights implementation.
+
 ## Next on the Roadmap (as of June 2026)
 1. Promo code engine (admin create/edit + customer calculator)
 2. Post-job review + discount sequence (Twilio SMS → approval portal → Google handoff)
