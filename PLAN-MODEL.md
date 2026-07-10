@@ -7,6 +7,8 @@
 
 ## The Reframe
 
+**Target market: Silicon Valley and Morgan Hill — Santa Cruz is the soft-launch proving ground.** The model is built for households with pool-guy expectations and monthly-exterior money; the Santa Cruz launch validates the machine before it meets its real market.
+
 **The whole model in four words — INTERNAL ONLY, never customer-facing: "Interiors free for regulars."** Exterior is the $20 product; interior is the loyalty currency, reachable only by rhythm. Every mechanism below is an implementation detail of that sentence. The customer experiences this truth (inside-and-out on visit one, renewed by rhythm) but is never handed the sentence — spoken, it's a coupon; unspoken, it's a relationship. Files with "underfilled"/"soil rate" as internal language.
 
 Simple Window Cleaning is not an "instant booking, exterior-only" company. Instant booking is a feature. The model is **affordable regularity through itemization and repeatable access**, with automation as the cost accelerant, not the customer promise.
@@ -134,6 +136,17 @@ The customer state machine — no grudge ledger, physics wins:
 - **Lapsed:** quiet expiry, no penalty. Return in 5 years with horrible windows → start over as a NEW customer (full 5-window special again) — but no add-on deal. Exploit-checked: strategic lapsing yields the deal at best 2 years in 3; faithful annual keeps it every year. The loyal path strictly dominates.
 - **Plans:** the upgrade path out of the whole machine — interiors free for regulars, said by no one, felt by everyone.
 - **Screens:** remain the honest pain point — always cleaned free, $2/window for tech removal/reinstall, staging lesson offered. No way around it; keep it truthful and small.
+
+## Rhythm Economics — the Locked Deal, Formally (settled July 2026)
+
+**The locked deal is a locked PER-SIDE RATE, portable across surfaces and cadence — never a locked bundle.** A "10 windows in/out for $250" first deal is really 20 sides at ~$12.50/side; on rhythm, the customer may re-allocate those sides however life demands (all-exterior monthly, all-interior via partner, any mix). The deal never changes; the rhythm does — which is how a $250/year household becomes a $250/month household with zero renegotiation.
+
+- **The mission in one line:** convert people who clean windows every 2+ years into every-6-months-or-shorter people. The frequency ladder: never → first visit → annual (locked deal + reminders) → semi-annual (month-nine discomfort + mid-year touch offer) → plan. Each rung up is a better deal for them, lighter work for us (physics), and more revenue per household.
+- **Fungibility cuts both ways:** the customer allocates sides across surfaces; we allocate fulfillment across labor (own WFP for high-margin exterior, partner for interiors at a per-side cost below the locked rate). Even if a "cheaper guy" takes a surface, whoever holds the rhythm owns the household — the relationship, reminders, history, and locked deal are the asset, not the squeegee time.
+- **Rich-guy stress test — passes structurally:** the discounted rate is unreachable without rhythm. Cold or sporadic arrivals pay retail ($20/side) every time, because the deal lapses between their visits. The only wealthy customer paying the locked rate is one on-rhythm — the dream account. Remaining soft spot is psychological (some wealthy buyers distrust cheap): that's the WeeklyWindows premium-register lever, parked for later.
+- **Floor check — the gamer is fine:** the 18-month 5-window optimizer gets fair-pay work ($/hr never underwater), a bounded basket (add-on special is once-per-address ever), and lives with a 5-clean/10-dirty contrast that sells the upgrade from inside their own house.
+- **The competitive bar:** the deal just needs to be good enough, plus the convenience, to beat any "other guy" offer. Convenience compounds (reminders, locked rate, known house, history, plan number waiting); discounts don't. The other guy sells a price; we sell never-thinking-about-it.
+- **Complexity policy:** edge cases (partner spread, quality accountability, dual-fulfiller scheduling) get refined over time from app + golf-ball data — measurement, not whiteboard debate.
 
 ## First-Visit Economics Defense
 
