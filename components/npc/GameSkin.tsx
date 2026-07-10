@@ -126,7 +126,7 @@ export function GameSkin(props: SkinProps) {
     switch (s) {
       case "location": return `Greetings, traveler.\nI see your booking is set for ${SERVICE_AREAS[localZip]?.name ?? "Santa Cruz"}, CA ${localZip}.\nIs that the correct area for our crew?`;
       case "timeslot": return `Excellent. Your slot is held for ${slot}.\nShall we keep this time, or would you prefer another?`;
-      case "windows":  return `Very well. How many windows shall we cleanse today?\n$22 for the first, $20 each after. No ladders, no mess, no hidden fees.`;
+      case "windows":  return `Very well. How many windows shall we cleanse today?\n$20 each, flat. No ladders, no mess, no hidden fees.`;
       case "estimate": return `Understood — ${windowCount} window${windowCount!==1?"s":""} at $${calcPrice(windowCount, SERVICE_AREAS[localZip]?.minWindows ?? 1)}.\nShall I also arrange a full-house estimate?\nNo extra charge for the visit.`;
       case "contact":  return `One last thing, traveler — where shall our crew find you?\nStreet and city will do. All else is optional.\nCA ${localZip} · Service confirmed.`;
       case "complete": return `The quest is complete, traveler.\nYour order awaits — press Book Now when ready.\nMay your windows shine like crystal.`;

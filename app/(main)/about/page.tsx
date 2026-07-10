@@ -42,7 +42,7 @@ export default function AboutPage() {
           },
           {
             title: "Priced per window",
-            body: "$22 per window, period. No hidden fees, no surprise charges. You see the total before you book.",
+            body: "$20 per window, period. No hidden fees, no surprise charges. You see the total before you book.",
           },
           {
             title: "Book in 60 seconds",

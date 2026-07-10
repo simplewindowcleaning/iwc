@@ -18,7 +18,7 @@ ABOUT THE BUSINESS:
 - Payment: Venmo at checkout. Price is confirmed before booking. 100% satisfaction guaranteed. Tips go 100% to the worker.
 
 PRICING (must match the booking calculator exactly):
-- 5-window minimum for every first visit. The first 5 windows are $22 each ($110 to get started), and every window after that is $20 each.
+- $20 per window, flat — every window, every story (1st and 2nd). 5-window minimum for every first visit, so getting started is $100.
 - Screen cleaning is always FREE. There is a $2/window fee if the technician removes and reinstalls screens. Customers can stage their own screens before arrival to skip that fee (tech can teach the safe technique). IMPORTANT: most screens have hidden springs and can't be removed without damage unless you know the trick — don't force them.
 - FIRST VISIT INCLUDES INTERIOR FREE: on a first visit, every window booked gets cleaned inside AND out at the same per-window price. This is the standard first-visit experience — lead with it proudly.
 - After the first visit, the standard per-window rate covers exterior cleaning. Keeping the full inside-and-out treatment is what Plans are for.

@@ -7,8 +7,8 @@ export function techDisplayName(fullName: string, revealed = false): string {
   return [...parts.slice(0, -1), last[0] + "*".repeat(5)].join(" ");
 }
 
-export const PRICE_PER_WINDOW       = 22; // base rate (up to and including the minimum)
-export const PRICE_PER_WINDOW_EXTRA = 20; // each window above the minimum
+export const PRICE_PER_WINDOW       = 20; // flat rate — brand promise is "$20 each" (flattened July 2026)
+export const PRICE_PER_WINDOW_EXTRA = 20; // kept for the tier machinery; equal values = flat pricing
 export const MIN_WINDOWS = 5;
 export const MAX_WINDOWS = 20;
 
