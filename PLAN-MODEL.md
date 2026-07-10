@@ -97,6 +97,7 @@ Per-window qualification planted before the quote → itemized exclusions land a
 ## Systems Implications (for Claude Code)
 
 - **The iPad app stays crucial under flat pricing** — three irreplaceable jobs: (1) adding windows beyond the 5 preordered, (2) the on-site screens conversation (staging lesson, $2 removal call), (3) the per-window "is this 1 window?" documenter. Until the golf ball has timed ~1000 windows, the app IS the empirical dataset — every human qualification call is calibration data for computed plan eligibility later.
+- **Qualification generosity policy (interim):** exterior "counts as 1 window" calls are EXTRA GENEROUS until the golf-ball dataset is done (marginal cost is pole time; generosity buys goodwill + data). Interior calls are stricter — real manual labor inside the home.
 
 - **Plan schema:** plan = eligibility rules + visit floor + included scope + à-la-carte rate card
 - **Promo engine repurposed:** promo codes become plan-enrollment instruments, not one-off discounts
