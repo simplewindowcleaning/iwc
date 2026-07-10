@@ -27,7 +27,8 @@ Every window in every home is classified on these axes. Plan eligibility is comp
 
 ## Pricing Architecture
 
-- **Anchor:** $20/window, any story (flat height pricing = silent ladderless differentiator)
+- **The pricing atom: $20 per side.** A window has two sides; you pay per side. Everything derives: exterior visit = one side = $20, in-and-out = $40 retail, free interior = a countable $20/window gift, half-price interior add-on = $10. "Per side" is layer-two vocabulary — revealed only at the window-6 add-on moment and in the agent's deeper answers; the mantra stays "$20 each" for skimmers.
+- **Anchor:** $20/window, 1st and 2nd story (flat height pricing = silent ladderless differentiator)
 - **Plan rate:** ~half of standard, never printed as a number in marketing ("most of our customers pay about half that")
 - **Reveal moment:** the quote widget — itemized house, price-pair display (first visit $X → every visit after $Y → plan $Z/mo). The gap between the numbers *is* the business model explaining itself.
 - **Billing lean:** per-window pricing displayed on the quote, flat monthly on the card after visit one calculates the house.
@@ -122,6 +123,18 @@ On-site upsell is binary: **take a Plan, or it's standard online booking from he
 
 The email requires nothing from the customer — no acceptance, no commitment. Core copy: "this same deal is locked in and you'll get reminders — would you like to see the plan you can consider?" Deal locked + reminders = retention by default; the plan link rides along as a soft P.S. ("your windows already qualified on our visit").
 
+## First-Visit Tier Structure (settled July 2026)
+
+The customer state machine — no grudge ledger, physics wins:
+
+- **Windows 1–5 (new customer):** interiors FREE — "new customer special," stamped as a special from the start so nobody mistakes it for the permanent price.
+- **Windows 6–10:** alert reveals layer-two truth: "Your first 5 have interior free as a new customer special. Normal rate is $20 per side of a standard 1st or 2nd floor window — but right now, add up to 5 more windows and get their interiors for half price (may also be added on-site if time permits)." Add-on special is ONCE PER ADDRESS, EVER.
+- **Window 11+:** back to normal rate, with a second alert that doubles as the ladderless qualification check ("1st and 2nd story, reachable without a ladder?") — verify before accepting that much commitment.
+- **Regular:** book every year → deal stays locked, reminders carry the rhythm.
+- **Lapsed:** quiet expiry, no penalty. Return in 5 years with horrible windows → start over as a NEW customer (full 5-window special again) — but no add-on deal. Exploit-checked: strategic lapsing yields the deal at best 2 years in 3; faithful annual keeps it every year. The loyal path strictly dominates.
+- **Plans:** the upgrade path out of the whole machine — interiors free for regulars, said by no one, felt by everyone.
+- **Screens:** remain the honest pain point — always cleaned free, $2/window for tech removal/reinstall, staging lesson offered. No way around it; keep it truthful and small.
+
 ## First-Visit Economics Defense
 
 The $100 in-and-out first visit is acquisition cost, not a price — it only loses money if plan conversion stays at zero. The metric is plan conversion rate, not first-visit volume. Fences:
@@ -131,7 +144,7 @@ The $100 in-and-out first visit is acquisition cost, not a price — it only los
 3. **The locked deal = the RATE, never free interior.** The next-offer email locks $20 flat on the original windows against future increases. Recurring interior is purchasable ONLY as a plan — if the lock included in-and-out, it would undercut the entire plan ladder.
 4. **Calendar as throttle** — control first-visit slots per week; surging demand becomes wait time (reads as popularity), not price panic.
 5. **Grandfather loudly** — when floors rise for new addresses, locked customers keep theirs and get told so ("prices went up, yours didn't" — the strongest retention email in existence).
-6. **The deal is earned annually, one law system-wide: your rate reflects your rhythm.** Book every year → the founding deal stays. Miss a year → the special quietly expires; standard $20 flat is the landing pad (no punitive mechanics, no 1-window caps — a lapsed customer is recoverable, an insulted one is gone).
+6. **The deal is earned annually, one law system-wide: your rate reflects your rhythm.** Book every year → the founding deal stays. Miss a year → the special quietly expires; the landing pad is a fresh NEW-customer state (full 5-window special, no penalty, no add-on deal). A lapsed customer is recoverable, an insulted one is gone.
 7. **No account walls.** Address + email from the booking IS the account — deal tracking, lapse detection, and once-per-address enforcement all run on data already collected. If customers ever need to see their status, a passwordless magic-link page — never a signup gate on Instant Booking.
 
 ## Open Decisions
