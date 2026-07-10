@@ -16,8 +16,8 @@ const cards = [
   {
     num: '02',
     label: 'Where everyone starts',
-    headline: '5 EXTERIORS MIN.',
-    sub: 'Every first visit books at least 5 exterior windows — that’s how we get the process started and get eyes on your glass.',
+    headline: '5 WINDOWS MIN.',
+    sub: 'Every first visit starts at 5 windows — and first visits get the full inside-and-out treatment on every window you book.',
     color: '#FFB020',
   },
   {
