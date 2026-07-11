@@ -3,6 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+// The SimpleWindows homepage widget calls this same brain cross-origin
+const ALLOWED_ORIGINS = [
+  "https://www.simplewindowcleaning.com",
+  "https://simplewindowcleaning.com",
+];
+
+function corsHeaders(req: NextRequest) {
+  const origin = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(req) });
+}
+
 const SYSTEM = `You are the customer service assistant for Simple Windows, a window cleaning business serving Santa Cruz County, CA. Be friendly, knowledgeable, and direct. Keep replies conversational and concise — no corporate fluff.
 
 THE BRAND IN ONE LINE:
@@ -114,9 +133,9 @@ export async function POST(req: NextRequest) {
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
-    return NextResponse.json({ text });
+    return NextResponse.json({ text }, { headers: corsHeaders(req) });
   } catch (err) {
     console.error("Chat API error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: String(err) }, { status: 500, headers: corsHeaders(req) });
   }
 }

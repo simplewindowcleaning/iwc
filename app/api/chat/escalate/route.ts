@@ -4,6 +4,24 @@ import twilio from "twilio";
 
 export const dynamic = "force-dynamic";
 
+const ALLOWED_ORIGINS = [
+  "https://www.simplewindowcleaning.com",
+  "https://simplewindowcleaning.com",
+];
+
+function corsHeaders(req: NextRequest) {
+  const origin = req.headers.get("origin") ?? "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(req) });
+}
+
 async function sendSMS(name: string, phone: string, summary: string) {
   const sid   = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
@@ -27,7 +45,7 @@ export async function POST(req: NextRequest) {
     transcript: transcript ?? null,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500, headers: corsHeaders(req) });
 
   try {
     await sendSMS(name ?? "Unknown", phone ?? "no phone", summary ?? "");
@@ -35,7 +53,7 @@ export async function POST(req: NextRequest) {
     console.error("Twilio error:", err);
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { headers: corsHeaders(req) });
 }
 
 export async function GET() {
