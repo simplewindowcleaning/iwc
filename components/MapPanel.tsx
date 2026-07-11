@@ -77,7 +77,6 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
   const [centeredX, setCenteredX]         = useState(() => Math.max(16, (window.innerWidth - CARD_W) / 2));
   const [cardMovedLeft, setCardMovedLeft]   = useState(false);
   const [slideshowClosed, setSlideshowClosed] = useState(false);
-  const [tickerIdx, setTickerIdx] = useState(0);
   const onZipChangeRef = useRef(onZipChange);
   const onGoRef = useRef(onGo);
   const onOpenRef = useRef(onOpen);
@@ -162,23 +161,6 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
     initializedForZipRef.current = zip;
   }, [stepIdx, zip]);
 
-  // ── Differentiator ticker ────────────────────────────────────────
-  const DIFFERENTIATORS = [
-    "Real-time booking — confirmed the moment you tap",
-    "24/7 — text or web only, no voicemail, ever",
-    "$2M insured · claims handled so your homeowner's policy stays untouched",
-    "No minimum window count",
-    "Badged · background-checked on every single visit",
-    "Text alerts before arrival, at start, and when we're done",
-    "Affordable recurring service built for everyday families",
-    "25 years of professional window cleaning experience",
-    "100% cashless · 100% of tips go directly to your technician",
-  ];
-  useEffect(() => {
-    if (!videoTriggered || stepIdx > 1) return;
-    const id = setInterval(() => setTickerIdx(i => (i + 1) % DIFFERENTIATORS.length), 3800);
-    return () => clearInterval(id);
-  }, [videoTriggered, stepIdx]);
 
   // ── Init map ────────────────────────────────────────────────────
   useEffect(() => {
@@ -448,30 +430,6 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
               autoPlay loop muted playsInline
               style={{ width: "100%", display: "block" }}
             />
-            <div style={{ padding: "10px 12px 12px" }}>
-              <div style={{
-                fontSize: 7.5, fontWeight: 700, letterSpacing: "0.2em",
-                textTransform: "uppercase", color: "rgba(126,200,227,0.4)",
-                marginBottom: 6,
-              }}>
-                Why Simple Windows
-              </div>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={tickerIdx}
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.35, ease: "easeOut" }}
-                  style={{
-                    fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)",
-                    lineHeight: 1.45, letterSpacing: "-0.01em",
-                  }}
-                >
-                  {DIFFERENTIATORS[tickerIdx]}
-                </motion.div>
-              </AnimatePresence>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
