@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 const TEAL = "rgba(126,200,227,";
@@ -23,6 +24,9 @@ function parseEscalation(text: string): { clean: string; escalation: Escalation 
 }
 
 export function ChatWidget() {
+  // The booking page has the embedded Instant Booking Agent — same brain,
+  // dedicated panel — so the floating bubble stands down there.
+  const pathname = usePathname();
   const [open, setOpen]           = useState(false);
   const [messages, setMessages]   = useState<Message[]>([]);
   const [input, setInput]         = useState("");
@@ -87,6 +91,8 @@ export function ChatWidget() {
       setLoading(false);
     }
   }
+
+  if (pathname === "/book") return null;
 
   return (
     <>

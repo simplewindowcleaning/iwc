@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { NPCWidget } from "@/components/NPCWidget";
+import { BookingAgent } from "@/components/BookingAgent";
 import { AppHeader } from "@/components/AppHeader";
 import { MobileView } from "@/components/MobileView";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,30 +112,67 @@ export default function HomePage() {
           promoEnabled={promoEnabled}
         />
 
-        {/* Floating NPC panel — slides in on GO! */}
-        <AnimatePresence>
-          {panelVisible && (
-            <motion.div
-              initial={{ x: 390, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 390, opacity: 0 }}
-              transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              style={{
-                position: "fixed",
-                top: 16,
-                right: 16,
-                bottom: 16,
-                width: 360,
-                zIndex: 10,
-                borderRadius: 16,
-                background: "rgba(10, 6, 20, 0.80)",
-                backdropFilter: "blur(18px)",
-                WebkitBackdropFilter: "blur(18px)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
-                overflowY: "auto",
-              }}
-            >
+        {/* Floating right column — Instant Booking Agent above, traditional widget below */}
+        <motion.div
+          initial={{ x: 390, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 28, stiffness: 260, delay: 0.2 }}
+          style={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            bottom: 16,
+            width: 360,
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          {/* Agent chat — the conversational voice of the same booking state */}
+          <motion.div
+            initial={{ y: -14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.45 }}
+            style={{
+              flex: "0 0 42%",
+              minHeight: 0,
+              borderRadius: 16,
+              background: "rgba(10, 6, 20, 0.80)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
+              border: "1px solid rgba(126,200,227,0.16)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
+              overflow: "hidden",
+            }}
+          >
+            <BookingAgent
+              zip={selectedZip}
+              windowCount={windowCount}
+              date={selectedDate}
+              time={selectedTime}
+              slotMap={slotMap}
+              onApplySlot={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
+            />
+          </motion.div>
+
+          {/* Traditional booking widget — the agent's visible instrument panel */}
+          <motion.div
+            initial={{ y: 18, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.6 }}
+            style={{
+              flex: 1,
+              minHeight: 0,
+              borderRadius: 16,
+              background: "rgba(10, 6, 20, 0.80)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
+              overflowY: "auto",
+            }}
+          >
               <NPCWidget
                 date={selectedDate}
                 time={selectedTime}
@@ -168,9 +206,8 @@ export default function HomePage() {
                 slotMap={slotMap}
                 goTrigger={goTrigger}
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* ── Review overlay — appears instead of routing directly to /summary ── */}

@@ -690,9 +690,8 @@ export default function SlideshowHtml({ onClose }: { onClose?: () => void }) {
           }} />
         </div>
 
-        {/* Dots + nav */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 14px 10px" }}>
-          <button onClick={handlePrev} style={NAV_BTN_STYLE}>← Prev</button>
+        {/* Dots — nav buttons removed; auto-advance carries the show */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "8px 14px 10px" }}>
           <div style={{ display: "flex", gap: 6 }}>
             {SLIDES.map((_, i) => (
               <button
@@ -706,7 +705,6 @@ export default function SlideshowHtml({ onClose }: { onClose?: () => void }) {
               />
             ))}
           </div>
-          <button onClick={handleNext} style={NAV_BTN_STYLE}>Next →</button>
         </div>
 
         {/* Wallpaper border — bottom */}
