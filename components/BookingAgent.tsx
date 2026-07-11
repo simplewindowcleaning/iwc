@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatDate, formatTime } from '@/lib/availability'
 
@@ -224,11 +225,13 @@ export function BookingAgent(props: {
         </button>
       </div>
 
-      {/* How it's done — companion video popup, docked left; page stays usable */}
+      {/* How it's done — companion video popup, docked top-left; portaled to
+          <body> because the agent panel's transform would trap position:fixed */}
+      {typeof document !== 'undefined' && createPortal(
       <AnimatePresence>
         {videoOpen && (
           <motion.div
-            className="fixed left-4 bottom-4 z-[600] w-[min(360px,78vw)] rounded-[16px] overflow-hidden"
+            className="fixed left-4 top-4 z-[600] w-[min(360px,78vw)] rounded-[16px] overflow-hidden"
             initial={{ opacity: 0, x: -24, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -16, scale: 0.97 }}
@@ -248,7 +251,8 @@ export function BookingAgent(props: {
             </p>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body)}
     </div>
   )
 }
