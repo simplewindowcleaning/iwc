@@ -95,7 +95,10 @@ export function BookingAgent(props: {
     setThinking(true)
     try {
       const avail = Object.keys(slotMap).sort().slice(0, 30)
-        .map(d => `${d}: ${[...slotMap[d]].sort().join(', ')}`).join('\n')
+        .map(d => {
+          const weekday = new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { weekday: 'long' })
+          return `${d} (${weekday}): ${[...slotMap[d]].sort().join(', ')}`
+        }).join('\n')
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,7 +106,7 @@ export function BookingAgent(props: {
           context:
             `You are embedded on the booking page as the Instant Booking Agent. ` +
             `Current booking state: ZIP ${zip}, ${windowCount} windows, currently selected ${formatDate(date)} at ${formatTime(time)}. ` +
-            `Upcoming open slots (date: times, 24h clock):\n${avail}\n` +
+            `Upcoming open slots (date (weekday): times, 24h clock) — trust the weekday labels, do not recompute them:\n${avail}\n` +
             `You cannot change the calendar yourself — when you find a slot the customer wants, tell them to tap it in the calendar below this chat. ` +
             `If nothing fits their request, offer to have Chris text them when something opens. Keep replies to 1-3 short sentences.`,
           messages: history.map(m => ({ role: m.role === 'agent' ? 'assistant' : 'user', content: m.text })),
