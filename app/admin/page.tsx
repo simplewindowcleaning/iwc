@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [finTx, setFinTx]       = useState<{ id: string; date: string; description: string; amount: number; type: "income" | "expense"; source: string; category: string | null }[]>([]);
   const [finMile, setFinMile]   = useState<{ id: string; date: string; miles: number; description: string | null }[]>([]);
   const [escalations, setEscalations] = useState<{ id: string; created_at: string; name: string | null; phone: string | null; summary: string | null; transcript: { role: string; content: string }[] | null }[]>([]);
+  const [emailSignups, setEmailSignups] = useState<{ id: string; created_at: string; email: string; full_name: string | null; phone: string | null; sms_consent: boolean | null; sms_marketing_consent: boolean | null; email_consent: boolean | null }[]>([]);
 
   const [analytics, setAnalytics] = useState<{
     company: { completedGigs: number; totalWindows: number; avgWindowsPerGig: number; avgDailyWindows: number; avgSale: number };
@@ -127,6 +128,8 @@ export default function AdminPage() {
     if (miRes.ok) { const { entries: d } = await miRes.json(); if (d) setFinMile(d); }
     const esRes = await fetch("/api/chat/escalate", { headers: h });
     if (esRes.ok) { const d = await esRes.json(); if (Array.isArray(d)) setEscalations(d); }
+    const sgRes = await fetch("/api/admin/early-signups", { headers: h });
+    if (sgRes.ok) { const { signups } = await sgRes.json(); if (Array.isArray(signups)) setEmailSignups(signups); }
   }, []);
 
   async function handleReviewStatus(id: string, status: "approved" | "rejected") {
@@ -1203,6 +1206,39 @@ export default function AdminPage() {
                     );
                   })}
                 </div>
+              )}
+
+              {/* ── Collected emails ── */}
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "rgba(255,255,255,0.25)", margin: "36px 0 16px" }}>
+                EMAIL LIST — {emailSignups.length} COLLECTED SIGNUP{emailSignups.length === 1 ? "" : "S"}
+              </div>
+              {emailSignups.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.2)", fontSize: 13 }}>
+                  No email signups yet — the soft-launch popup on simplewindowcleaning.com feeds this list.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {emailSignups.map(s => (
+                    <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "10px 14px" }}>
+                      <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 600 }}>{s.email}</span>
+                      {s.full_name && <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>{s.full_name}</span>}
+                      {s.phone && <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 12 }}>{s.phone}</span>}
+                      <span style={{ marginLeft: "auto", display: "flex", gap: 6, alignItems: "center" }}>
+                        {s.email_consent && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(126,200,227,0.7)", border: "1px solid rgba(126,200,227,0.25)", borderRadius: 999, padding: "2px 8px" }}>EMAIL OK</span>}
+                        {s.sms_consent && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(52,211,153,0.8)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 999, padding: "2px 8px" }}>SMS OK</span>}
+                        <span style={{ color: "rgba(255,255,255,0.25)", fontSize: 11 }}>{new Date(s.created_at).toLocaleDateString()}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {emailSignups.length > 0 && (
+                <button
+                  onClick={() => navigator.clipboard.writeText(emailSignups.filter(s => s.email_consent).map(s => s.email).join(", "))}
+                  style={{ marginTop: 12, background: "transparent", border: "1px solid rgba(126,200,227,0.3)", borderRadius: 999, color: "rgba(126,200,227,0.8)", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", padding: "7px 16px", cursor: "pointer" }}
+                >
+                  COPY CONSENTED EMAILS ({emailSignups.filter(s => s.email_consent).length})
+                </button>
               )}
             </div>
           )}
