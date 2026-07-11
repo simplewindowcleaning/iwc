@@ -204,35 +204,28 @@ export function BookingAgent(props: {
         </button>
       </div>
 
-      {/* How it's done — video popup, agent-summoned */}
+      {/* How it's done — companion video popup, docked left; page stays usable */}
       <AnimatePresence>
         {videoOpen && (
           <motion.div
-            className="fixed inset-0 z-[600] flex items-center justify-center p-6"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed left-4 bottom-4 z-[600] w-[min(360px,78vw)] rounded-[16px] overflow-hidden"
+            initial={{ opacity: 0, x: -24, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: -16, scale: 0.97 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+            style={{ border: '1px solid rgba(126,200,227,0.3)', boxShadow: '0 16px 64px rgba(0,0,0,0.7)', background: '#05080c' }}
           >
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
-              onClick={() => setVideoOpen(false)} />
-            <motion.div
-              className="relative z-10 w-full max-w-[560px] rounded-[16px] overflow-hidden"
-              initial={{ scale: 0.92, opacity: 0, y: 16 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 10 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-              style={{ border: '1px solid rgba(126,200,227,0.3)', boxShadow: '0 16px 64px rgba(0,0,0,0.7)', background: '#05080c' }}
-            >
-              <button onClick={() => setVideoOpen(false)} aria-label="Close"
-                className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full cursor-pointer text-white"
-                style={{ background: 'rgba(0,0,0,0.5)', border: 'none' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-              <video src="/videos/demo.mp4" autoPlay loop muted playsInline controls className="w-full block" />
-              <p className="text-center text-[11px] py-[10px] px-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                Reverse-osmosis purified water — nothing dissolved in it, so it dries <span className="font-black text-white">spot-free</span>. No soap, no residue.
-              </p>
-            </motion.div>
+            <button onClick={() => setVideoOpen(false)} aria-label="Close"
+              className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center rounded-full cursor-pointer text-white"
+              style={{ background: 'rgba(0,0,0,0.6)', border: 'none' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <video src="/videos/demo.mp4" autoPlay loop muted playsInline controls className="w-full block" />
+            <p className="text-center text-[10px] py-[8px] px-3" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Reverse-osmosis purified water dries <span className="font-black text-white">spot-free</span>. No soap, no residue.
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
