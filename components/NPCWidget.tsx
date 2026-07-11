@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 import { formatDate, formatTime, FALLBACK_DATE, FALLBACK_TIME } from "@/lib/availability";
 import { calcPrice } from "@/lib/constants";
 import { SERVICE_AREAS } from "@/lib/serviceAreas";
-import { GameSkin } from "./npc/GameSkin";
 import { CleanSkin } from "./npc/CleanSkin";
 import { PowerConsoleSkin } from "./npc/PowerConsoleSkin";
 import type { Step, Skin, SkinProps, QuestItem, ThemeMode } from "./npc/types";
@@ -109,17 +108,11 @@ export function NPCWidget(props: Props) {
 
   // ── Header styling derived from mode ─────────────────────────────
   const isDark  = mode === "dark";
-  const isGame  = skin === "game";
-  const panelBg = isGame ? "#0a0614" : isDark ? "#080810" : "#f4f4fa";
+  const panelBg = isDark ? "#080810" : "#f4f4fa";
   const headerBorder = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)";
   const labelColor   = isDark ? "rgba(126,200,227,0.5)" : "rgba(109,40,217,0.5)";
   const labelText    = isDark ? "rgba(167,139,250,0.55)" : "rgba(109,40,217,0.55)";
   const headerText   = isDark ? "rgba(255,255,255,0.7)" : "rgba(17,24,39,0.7)";
-
-  // Toggle button (game ↔ clean/power) — stays off-white/red regardless of mode for visibility
-  const toggleLabel = isGame ? "Leave Gameplay Path" : "▶ GAME";
-  const toggleBorder = isGame ? "rgba(204,51,51,0.6)" : "rgba(167,139,250,0.35)";
-  const toggleColor  = isGame ? "#cc3333" : "rgba(167,139,250,0.8)";
 
   // Light/dark toggle
   const modeIcon = isDark ? "☀" : "🌙";
@@ -134,11 +127,7 @@ export function NPCWidget(props: Props) {
       }}>
         {/* Label */}
         <div style={{ minWidth:0 }}>
-          {isGame ? (
-            <span style={{ fontFamily:"'Cinzel',serif", fontSize:9, color:labelColor, letterSpacing:2, textTransform:"uppercase" }}>
-              ✦ Quest Mode
-            </span>
-          ) : skin === "power" ? (
+          {skin === "power" ? (
             <span style={{ fontSize:10, fontWeight:600, color:labelText, letterSpacing:"0.12em", textTransform:"uppercase" }}>
               Power Console
             </span>
@@ -166,37 +155,12 @@ export function NPCWidget(props: Props) {
             onMouseLeave={e => e.currentTarget.style.opacity = "1"}
           >{modeIcon}</button>
 
-          {/* Game ↔ Clean toggle */}
-          <button
-            onClick={() => setSkin(s => s === "game" ? "clean" : "game")}
-            title={isGame ? "Switch to clean view" : "Switch to game mode"}
-            style={{
-              fontFamily: isGame ? "'Cinzel',serif" : "inherit",
-              fontSize: 10, fontWeight: 700,
-              letterSpacing: isGame ? "0.12em" : "0.08em",
-              border: `1px solid ${toggleBorder}`,
-              background: "transparent",
-              color: toggleColor,
-              padding: "4px 10px",
-              borderRadius: 4, cursor: "pointer", transition: "all 0.15s",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = isGame ? "#cc3333" : "rgba(167,139,250,0.15)";
-              e.currentTarget.style.color = isGame ? "#fff" : "#a78bfa";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = toggleColor;
-            }}
-          >{toggleLabel}</button>
         </div>
       </div>
 
       {/* ── Active skin ─────────────────────────────────────────── */}
       <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
-        {skin === "game" ? (
-          <GameSkin key="game" {...skinProps} />
-        ) : skin === "power" ? (
+        {skin === "power" ? (
           <PowerConsoleSkin
             key="power"
             date={date} time={time} windowCount={windowCount}
