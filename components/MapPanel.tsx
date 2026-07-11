@@ -72,7 +72,6 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
   const [mapLoaded, setMapLoaded]         = useState(false);
   const [hasFlown, setHasFlown]           = useState(false);
   const [overlaysVisible, setOverlaysVisible] = useState(false);
-  const [videoTriggered, setVideoTriggered] = useState(false);
   const CARD_W = 292;
   const [centeredX, setCenteredX]         = useState(() => Math.max(16, (window.innerWidth - CARD_W) / 2));
   const [cardMovedLeft, setCardMovedLeft]   = useState(false);
@@ -125,32 +124,15 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  // ── Card-position + video transitions ───────────────────────────────
+  // ── Card-position transitions ────────────────────────────────────────
   useEffect(() => {
     if (stepIdx >= 2) {
       setCardMovedLeft(true);
-      setVideoTriggered(false);   // any confirmed step kills the video
     } else if (stepIdx === 0) {
       setCardMovedLeft(false);
       setSlideshowClosed(false);
-      setVideoTriggered(false);   // full reset on restart
     }
   }, [stepIdx]);
-
-  // ── Show video on first interaction with anything on the page ────────
-  useEffect(() => {
-    function onInteract() {
-      setVideoTriggered(true);
-      document.removeEventListener("click",   onInteract, true);
-      document.removeEventListener("keydown", onInteract, true);
-    }
-    document.addEventListener("click",   onInteract, true);
-    document.addEventListener("keydown", onInteract, true);
-    return () => {
-      document.removeEventListener("click",   onInteract, true);
-      document.removeEventListener("keydown", onInteract, true);
-    };
-  }, []);
 
   // ── Auto-set window count to zip minimum when entering timeslot step ──
   useEffect(() => {
@@ -393,44 +375,6 @@ export default function MapPanel({ step, selectedZip, date, time, windowCount, n
           }}>
             <SlideshowHtml onClose={() => setSlideshowClosed(true)} />
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* Video + ticker — one unified card, top-left */}
-      <AnimatePresence>
-        {videoTriggered && stepIdx <= 1 && (
-          <motion.div
-            key="video-box"
-            initial={{ opacity: 0, y: 20, scale: 0.92 }}
-            animate={{
-              opacity: 1, scale: 1,
-              y: stepIdx === 1 && !!area?.alert ? 165 : 0,
-            }}
-            exit={{ opacity: 0, y: 10, scale: 0.94 }}
-            transition={{
-              opacity: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-              scale:   { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-              y: stepIdx === 1 && !!area?.alert
-                ? { type: "spring", stiffness: 180, damping: 28, delay: 2.5 }
-                : { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-            }}
-            style={{
-              position: "absolute", top: 16, zIndex: 10,
-              left: stepIdx === 1 && !!area?.alert ? 16 : "10%",
-              width: 240, borderRadius: 14,
-              border: `1px solid ${TEAL}0.22)`,
-              boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
-              background: "rgba(5,5,8,0.88)",
-              overflow: "hidden",
-              pointerEvents: "none",
-            }}
-          >
-            <video
-              src="/videos/demo.mp4"
-              autoPlay loop muted playsInline
-              style={{ width: "100%", display: "block" }}
-            />
-          </motion.div>
         )}
       </AnimatePresence>
 

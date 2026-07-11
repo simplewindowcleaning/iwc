@@ -79,6 +79,17 @@ export function BookingAgent(props: {
     ])
   }
 
+  function askLadder() {
+    setMessages(m => [...m,
+      { role: 'user', text: 'How is there no ladder for the 2nd story outside?' },
+      {
+        role: 'agent',
+        text: 'Our water-fed pole reaches 2nd-story glass right from the ground — reverse-osmosis purified water goes up the pole, soft brushes scrub, and the pure water rinse dries completely spot-free. No ladder, no risk, no marks. On the rare window where a ladder is truly needed (over a roof, tricky access), that one isn’t discounted and may even be extra. Here’s a quick look 👇',
+      },
+    ])
+    setVideoOpen(true)
+  }
+
   function otherTimes() {
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m,
@@ -185,6 +196,15 @@ export function BookingAgent(props: {
             <span className="inline-block animate-pulse">typing…</span>
           </motion.div>
         )}
+      </div>
+
+      {/* Persistent suggested question — pinned above the input for every state */}
+      <div className="px-3 pb-1 flex-shrink-0">
+        <button onClick={askLadder}
+          className="w-full text-[10.5px] font-bold px-[12px] py-[6px] rounded-full cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98] truncate"
+          style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px dashed rgba(126,200,227,0.3)' }}>
+          &ldquo;How is there no ladder for the 2nd story outside?&rdquo;
+        </button>
       </div>
 
       {/* Input */}
