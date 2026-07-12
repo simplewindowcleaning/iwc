@@ -308,7 +308,7 @@ export function CleanSkin(props: SkinProps) {
             style={{ background:"transparent", border:`1px solid ${T.CARD_BORDER}`, borderRadius:6, color:T.TEXT_DIM, fontSize:9, fontWeight:600, letterSpacing:"0.06em", padding:"3px 7px", cursor:"pointer", textTransform:"uppercase" as const, fontFamily:"inherit" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = T.ACCENT_BORDER; e.currentTarget.style.color = T.ACCENT; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = T.CARD_BORDER; e.currentTarget.style.color = T.TEXT_DIM; }}
-          >Full Form</button>
+          >Edit</button>
         )}
         {step !== "location" && (
           <button onClick={startOver}
