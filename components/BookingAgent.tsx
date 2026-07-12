@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { formatDate, formatTime } from '@/lib/availability'
+import { formatDate, formatTime, MIN_BOOKING_DATE } from '@/lib/availability'
 import { SERVICE_AREAS } from '@/lib/serviceAreas'
 
 const HINTS = [
@@ -23,7 +23,12 @@ function WeeksAheadCalendar({ slotMap, selectedDate, onPick }: {
   selectedDate: string
   onPick: (day: string) => void
 }) {
-  const today = new Date().toISOString().split('T')[0]
+  // Anchor to the same "effective today" the rest of the app uses (bookings
+  // don't open until MIN_BOOKING_DATE) — otherwise every day in the grid
+  // falls before that threshold and shows red/unavailable regardless of
+  // real slotMap data.
+  const realToday = new Date().toISOString().split('T')[0]
+  const today = realToday > MIN_BOOKING_DATE ? realToday : MIN_BOOKING_DATE
 
   const monday = (() => {
     const d = new Date(today + 'T12:00:00')
