@@ -926,7 +926,7 @@ function ZipSelector({ selectedZip, onZipChange, onGo }: { selectedZip: string; 
         </span>
         <select
           value={selectedZip}
-          onChange={e => onZipChange?.(e.target.value)}
+          onChange={e => { onZipChange?.(e.target.value); onGo?.(); }}
           style={{
             background: "transparent",
             border: "none",
