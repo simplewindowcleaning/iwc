@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { formatDate, formatTime } from '@/lib/availability'
+import { SERVICE_AREAS } from '@/lib/serviceAreas'
 
 const HINTS = [
   '“the nearest Wednesday, please”',
@@ -21,13 +22,25 @@ export function BookingAgent(props: {
   time: string
   slotMap: Record<string, string[]>
   onApplySlot: (date: string, time: string) => void
+  // When true, the agent opens by asking the customer to pick a ZIP instead
+  // of jumping straight to a slot suggestion (used for homepage-referred visits).
+  awaitZip?: boolean
+  // True once a zip has been confirmed via ANY path (including the traditional
+  // map dot / zip-selector GO button) — lets the agent's zip-pick phase resolve
+  // even if the customer bypassed its own buttons.
+  zipConfirmedExternally?: boolean
+  onZipPick?: (zip: string) => void
+  // Fired when the customer confirms a slot — parent uses this to reveal the
+  // traditional widget ("main panel"), which isn't needed until then.
+  onSlotConfirmed?: () => void
 }) {
-  const { zip, windowCount, date, time, slotMap, onApplySlot } = props
+  const { zip, windowCount, date, time, slotMap, onApplySlot, awaitZip, zipConfirmedExternally, onZipPick, onSlotConfirmed } = props
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
   const [offTopicFollowup, setOffTopicFollowup] = useState(false)
+  const [zipChosen, setZipChosen] = useState(!awaitZip)
   const openerDone = useRef(false)
   const lastNarrated = useRef('')
   const suppressNarration = useRef(false)
@@ -42,15 +55,33 @@ export function BookingAgent(props: {
     return null
   })()
 
+  // Zip-pick phase resolves if the customer confirms a zip via ANY path —
+  // its own buttons, or the traditional map dot / zip-selector GO button.
+  useEffect(() => {
+    if (zipConfirmedExternally) setZipChosen(true)
+  }, [zipConfirmedExternally])
+
+  useEffect(() => {
+    if (!awaitZip || zipChosen || messages.length > 0) return
+    setMessages([{ role: 'agent', text: 'Please select your Zip Code to begin.' }])
+  }, [awaitZip, zipChosen, messages.length])
+
   useEffect(() => {
     if (openerDone.current || !nearest) return
+    if (awaitZip && !zipChosen) return
     openerDone.current = true
     lastNarrated.current = `${date}|${time}`
-    setMessages([{
+    setMessages(m => [...m, {
       role: 'agent',
       text: `Hi ${zip} 👋 Our nearest slot for ${windowCount} windows is ${formatDate(nearest.date)} at ${formatTime(nearest.time)}. Does that work, or would you like to try some other times?`,
     }])
-  }, [nearest, zip, windowCount, date, time])
+  }, [nearest, zip, windowCount, date, time, awaitZip, zipChosen])
+
+  function pickZip(z: string) {
+    onZipPick?.(z)
+    setMessages(m => [...m, { role: 'user', text: `${SERVICE_AREAS[z]?.name ?? z} (${z})` }])
+    setZipChosen(true)
+  }
 
   // Narrate widget-driven changes so the chat mirrors the calendar
   useEffect(() => {
@@ -81,6 +112,7 @@ export function BookingAgent(props: {
       { role: 'user', text: 'That works!' },
       { role: 'agent', text: `Locked in: ${formatDate(nearest.date)} at ${formatTime(nearest.time)} ✓ Finish the steps below and you're set.` },
     ])
+    onSlotConfirmed?.()
   }
 
   function askLadder() {
@@ -185,9 +217,23 @@ export function BookingAgent(props: {
           ))}
         </AnimatePresence>
 
+        {/* Zip picker — homepage-referred visits start here instead of a slot suggestion */}
+        {awaitZip && !zipChosen && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="flex flex-wrap gap-[6px] self-start mt-1">
+            {Object.values(SERVICE_AREAS).map(area => (
+              <button key={area.zip} onClick={() => pickZip(area.zip)}
+                className="text-[10.5px] font-bold px-[11px] py-[6px] rounded-full cursor-pointer transition-all hover:brightness-110 active:scale-95"
+                style={{ background: 'rgba(126,200,227,0.14)', color: 'rgba(126,200,227,0.9)', border: '1px solid rgba(126,200,227,0.3)' }}>
+                {area.zip} — {area.name}
+              </button>
+            ))}
+          </motion.div>
+        )}
+
         {/* Quick actions — shown right after the opener, and again after any
             off-topic detour (free-text question or the ladder chip) */}
-        {(messages.length === 1 || offTopicFollowup) && nearest && (
+        {(messages.length === 1 || offTopicFollowup) && nearest && (!awaitZip || zipChosen) && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
             className="flex gap-2 self-start mt-1">
             <button onClick={confirmNearest}

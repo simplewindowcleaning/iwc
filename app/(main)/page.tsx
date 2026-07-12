@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { NPCWidget } from "@/components/NPCWidget";
 import { BookingAgent } from "@/components/BookingAgent";
 import { AppHeader } from "@/components/AppHeader";
@@ -16,9 +16,21 @@ import type { Step } from "@/components/npc/types";
 // MapPanel uses Mapbox GL — must not SSR
 const MapPanel = dynamic(() => import("@/components/MapPanel"), { ssr: false });
 
-
 export default function HomePage() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // Homepage links carry ?ref=sw / ?ref=plans — any ref means "arrived from
+  // the homepage," which gets the agent-led zip-first opening state. Direct
+  // visits (typed URL, no ref) get the bare map + zip box only.
+  const [fromHomepage] = useState(() => searchParams.get("ref") !== null);
 
   // ── Shared booking state ─────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState(FALLBACK_DATE);
@@ -62,6 +74,14 @@ export default function HomePage() {
   }, []);
 
   function initiateCheckout() { setContactModal(true); }
+
+  // Agent-driven zip pick: same flyTo + on-map calendar reveal as the
+  // traditional path, but WITHOUT revealing the NPC "main panel" yet —
+  // that only appears once a slot is confirmed (onSlotConfirmed below).
+  function handleAgentZipPick(zip: string) {
+    setSelectedZip(zip);
+    setActiveStep("timeslot");
+  }
 
   function handleGoToReview() {
     setPanelVisible(false);
@@ -112,102 +132,115 @@ export default function HomePage() {
           promoEnabled={promoEnabled}
         />
 
-        {/* Floating right column — Instant Booking Agent above, traditional widget below */}
-        <motion.div
-          initial={{ x: 390, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ type: "spring", damping: 28, stiffness: 260, delay: 0.2 }}
-          style={{
-            position: "fixed",
-            top: 16,
-            right: 16,
-            bottom: 16,
-            width: 360,
-            zIndex: 10,
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-          }}
-        >
-          {/* Agent chat — the conversational voice of the same booking state */}
+        {/* Floating right column — Instant Booking Agent above, traditional
+            widget below. Direct visits show neither until the traditional
+            zip/GO path reveals the widget; homepage-referred visits show
+            the agent immediately and lead with a zip picker. */}
+        {(fromHomepage || panelVisible) && (
           <motion.div
-            initial={{ y: -14, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.45 }}
+            initial={{ x: 390, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 28, stiffness: 260, delay: 0.2 }}
             style={{
-              flex: "0 0 42%",
-              minHeight: 0,
-              borderRadius: 16,
-              background: "rgba(10, 6, 20, 0.80)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              border: "1px solid rgba(126,200,227,0.16)",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
-              overflow: "hidden",
+              position: "fixed",
+              top: 16,
+              right: 16,
+              bottom: 16,
+              width: 360,
+              zIndex: 10,
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
             }}
           >
-            <BookingAgent
-              zip={selectedZip}
-              windowCount={windowCount}
-              date={selectedDate}
-              time={selectedTime}
-              slotMap={slotMap}
-              onApplySlot={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
-            />
-          </motion.div>
+            {/* Agent chat — the conversational voice of the same booking state */}
+            {fromHomepage && (
+              <motion.div
+                initial={{ y: -14, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.45 }}
+                style={{
+                  flex: panelVisible ? "0 0 42%" : 1,
+                  minHeight: 0,
+                  borderRadius: 16,
+                  background: "rgba(10, 6, 20, 0.80)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                  border: "1px solid rgba(126,200,227,0.16)",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
+                  overflow: "hidden",
+                }}
+              >
+                <BookingAgent
+                  zip={selectedZip}
+                  windowCount={windowCount}
+                  date={selectedDate}
+                  time={selectedTime}
+                  slotMap={slotMap}
+                  onApplySlot={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
+                  awaitZip={fromHomepage}
+                  zipConfirmedExternally={activeStep !== "location"}
+                  onZipPick={handleAgentZipPick}
+                  onSlotConfirmed={() => setPanelVisible(true)}
+                />
+              </motion.div>
+            )}
 
-          {/* Traditional booking widget — the agent's visible instrument panel */}
-          <motion.div
-            initial={{ y: 18, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.6 }}
-            style={{
-              flex: 1,
-              minHeight: 0,
-              borderRadius: 16,
-              background: "rgba(10, 6, 20, 0.80)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              border: "1px solid rgba(255,255,255,0.07)",
-              boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
-              overflowY: "auto",
-            }}
-          >
-              <NPCWidget
-                date={selectedDate}
-                time={selectedTime}
-                windowCount={windowCount}
-                needsEstimate={needsEstimate}
-                estimateDeadline={estimateDeadline}
-                onDateChange={setSelectedDate}
-                onTimeChange={setSelectedTime}
-                onWindowCountChange={setWindowCount}
-                onNeedsEstimateChange={setNeedsEstimate}
-                onEstimateDeadlineChange={setEstimateDeadline}
-                address={address}
-                firstName={firstName}
-                lastName={lastName}
-                phone={phone}
-                email={email}
-                notes={notes}
-                onAddressChange={setAddress}
-                onFirstNameChange={setFirstName}
-                onLastNameChange={setLastName}
-                onPhoneChange={setPhone}
-                onEmailChange={setEmail}
-                onNotesChange={setNotes}
-                selectedZip={selectedZip}
-                paused={npcPaused}
-                onResume={() => setNpcPaused(false)}
-                onGoToSummary={handleGoToReview}
-                onStepChange={setActiveStep}
-                onZipChange={setSelectedZip}
-                onBeforeCheckout={initiateCheckout}
-                slotMap={slotMap}
-                goTrigger={goTrigger}
-              />
+            {/* Traditional booking widget — the agent's visible instrument panel */}
+            {panelVisible && (
+              <motion.div
+                initial={{ y: 18, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.6 }}
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  borderRadius: 16,
+                  background: "rgba(10, 6, 20, 0.80)",
+                  backdropFilter: "blur(18px)",
+                  WebkitBackdropFilter: "blur(18px)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
+                  overflowY: "auto",
+                }}
+              >
+                <NPCWidget
+                  date={selectedDate}
+                  time={selectedTime}
+                  windowCount={windowCount}
+                  needsEstimate={needsEstimate}
+                  estimateDeadline={estimateDeadline}
+                  onDateChange={setSelectedDate}
+                  onTimeChange={setSelectedTime}
+                  onWindowCountChange={setWindowCount}
+                  onNeedsEstimateChange={setNeedsEstimate}
+                  onEstimateDeadlineChange={setEstimateDeadline}
+                  address={address}
+                  firstName={firstName}
+                  lastName={lastName}
+                  phone={phone}
+                  email={email}
+                  notes={notes}
+                  onAddressChange={setAddress}
+                  onFirstNameChange={setFirstName}
+                  onLastNameChange={setLastName}
+                  onPhoneChange={setPhone}
+                  onEmailChange={setEmail}
+                  onNotesChange={setNotes}
+                  selectedZip={selectedZip}
+                  paused={npcPaused}
+                  onResume={() => setNpcPaused(false)}
+                  onGoToSummary={handleGoToReview}
+                  onStepChange={setActiveStep}
+                  onZipChange={setSelectedZip}
+                  onBeforeCheckout={initiateCheckout}
+                  slotMap={slotMap}
+                  goTrigger={goTrigger}
+                />
+              </motion.div>
+            )}
           </motion.div>
-        </motion.div>
+        )}
       </div>
 
       {/* ── Review overlay — appears instead of routing directly to /summary ── */}
