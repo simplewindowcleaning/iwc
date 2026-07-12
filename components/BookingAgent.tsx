@@ -15,6 +15,84 @@ const HINTS = [
 
 type Msg = { role: 'agent' | 'user'; text: string }
 
+// Next 4 weeks at a glance — green days have availability, red are full,
+// clicking a green day jumps the shared date/time (which the map's own
+// week calendar re-centers on automatically) without narrating every tap.
+function WeeksAheadCalendar({ slotMap, selectedDate, onPick }: {
+  slotMap: Record<string, string[]>
+  selectedDate: string
+  onPick: (day: string) => void
+}) {
+  const today = new Date().toISOString().split('T')[0]
+
+  const monday = (() => {
+    const d = new Date(today + 'T12:00:00')
+    const dow = d.getDay()
+    d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1))
+    return d.toISOString().split('T')[0]
+  })()
+
+  const days = Array.from({ length: 28 }, (_, i) => {
+    const d = new Date(monday + 'T12:00:00')
+    d.setDate(d.getDate() + i)
+    return d.toISOString().split('T')[0]
+  })
+
+  const monthLabel = (() => {
+    const first = new Date(days[0] + 'T12:00:00')
+    const last = new Date(days[days.length - 1] + 'T12:00:00')
+    const f = first.toLocaleString('en-US', { month: 'short' })
+    const l = last.toLocaleString('en-US', { month: 'short' })
+    return f === l ? f : `${f} – ${l}`
+  })()
+
+  return (
+    <div className="rounded-[12px] p-[10px]" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <p className="text-[9px] font-black tracking-[0.12em] uppercase text-center mb-[7px]" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {monthLabel} — next 4 weeks
+      </p>
+      <div className="grid grid-cols-7 gap-[3px] mb-[3px]">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(l => (
+          <div key={l} className="text-center text-[8px] font-bold" style={{ color: 'rgba(255,255,255,0.25)' }}>{l}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-[3px]">
+        {days.map(day => {
+          const isPast = day < today
+          const hasSlots = (slotMap[day] ?? []).length > 0
+          const isSelected = day === selectedDate
+          const dayNum = new Date(day + 'T12:00:00').getDate()
+          return (
+            <button
+              key={day}
+              disabled={isPast || !hasSlots}
+              onClick={() => onPick(day)}
+              className="aspect-square rounded-[6px] text-[10px] font-bold flex items-center justify-center transition-all"
+              style={{
+                cursor: (isPast || !hasSlots) ? 'default' : 'pointer',
+                background: isPast ? 'rgba(255,255,255,0.03)'
+                  : isSelected ? 'rgba(126,200,227,0.9)'
+                  : hasSlots ? 'rgba(0,217,126,0.16)'
+                  : 'rgba(220,38,38,0.14)',
+                border: isPast ? '1px solid rgba(255,255,255,0.05)'
+                  : isSelected ? '1px solid rgba(126,200,227,0.9)'
+                  : hasSlots ? '1px solid rgba(0,217,126,0.4)'
+                  : '1px solid rgba(220,38,38,0.3)',
+                color: isPast ? 'rgba(255,255,255,0.15)'
+                  : isSelected ? '#08121c'
+                  : hasSlots ? 'rgba(0,217,126,0.95)'
+                  : 'rgba(220,38,38,0.8)',
+              }}
+            >
+              {dayNum}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export function BookingAgent(props: {
   zip: string
   windowCount: number
@@ -41,6 +119,7 @@ export function BookingAgent(props: {
   const [videoOpen, setVideoOpen] = useState(false)
   const [offTopicFollowup, setOffTopicFollowup] = useState(false)
   const [showQuickActions, setShowQuickActions] = useState(false)
+  const [browsingCalendar, setBrowsingCalendar] = useState(false)
   const [zipChosen, setZipChosen] = useState(!awaitZip)
   const openerDone = useRef(false)
   const lastNarrated = useRef('')
@@ -90,9 +169,10 @@ export function BookingAgent(props: {
     setZipChosen(true)
   }
 
-  // Narrate widget-driven changes so the chat mirrors the calendar
+  // Narrate widget-driven changes so the chat mirrors the calendar — but stay
+  // quiet while browsing the 4-week picker; the Confirm button handles that.
   useEffect(() => {
-    if (!openerDone.current) return
+    if (!openerDone.current || browsingCalendar) return
     const key = `${date}|${time}`
     if (key === lastNarrated.current) return
     lastNarrated.current = key
@@ -104,7 +184,7 @@ export function BookingAgent(props: {
       role: 'agent',
       text: `${formatDate(date)} at ${formatTime(time)} — shall I confirm this below? Or ask me for something specific, like ${hint}`,
     }])
-  }, [date, time])
+  }, [date, time, browsingCalendar])
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' })
@@ -140,11 +220,30 @@ export function BookingAgent(props: {
   function otherTimes() {
     setOffTopicFollowup(false)
     setShowQuickActions(false)
+    setBrowsingCalendar(true)
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m,
       { role: 'user', text: 'Show me other times' },
-      { role: 'agent', text: `No problem — browse the calendar below and tap anything open; I'll follow along. Or just tell me what you need, like ${hint}` },
+      { role: 'agent', text: `No problem — pick anything green below, or use the calendar in the middle if it's this week. Tap Confirm this whenever you're ready. Or just tell me what you need, like ${hint}` },
     ])
+  }
+
+  function pickCalendarDay(day: string) {
+    const slots = slotMap[day] ?? []
+    if (!slots.length) return
+    onApplySlot(day, slots[0])
+  }
+
+  function confirmSelected() {
+    setOffTopicFollowup(false)
+    setShowQuickActions(false)
+    setBrowsingCalendar(false)
+    lastNarrated.current = `${date}|${time}`
+    setMessages(m => [...m,
+      { role: 'user', text: 'Confirm this' },
+      { role: 'agent', text: `Locked in: ${formatDate(date)} at ${formatTime(time)} ✓ Finish the steps below and you're set.` },
+    ])
+    onSlotConfirmed?.()
   }
 
   async function send() {
@@ -258,6 +357,20 @@ export function BookingAgent(props: {
               className="text-[11px] font-bold px-[14px] py-[7px] rounded-full cursor-pointer transition-all hover:bg-white/10 active:scale-95"
               style={{ background: 'transparent', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.18)' }}>
               Other times
+            </button>
+          </motion.div>
+        )}
+
+        {/* 4-week-ahead picker — quiet while browsing; Confirm this ✓ is the
+            only thing that speaks for the customer until they're ready */}
+        {browsingCalendar && (
+          <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            className="self-stretch w-full mt-1 flex flex-col gap-[8px]">
+            <WeeksAheadCalendar slotMap={slotMap} selectedDate={date} onPick={pickCalendarDay} />
+            <button onClick={confirmSelected}
+              className="text-[11px] font-bold px-[14px] py-[8px] rounded-full cursor-pointer transition-all hover:brightness-110 active:scale-95 self-center"
+              style={{ background: 'rgba(126,200,227,0.85)', color: '#08121c', border: 'none' }}>
+              Confirm this ✓
             </button>
           </motion.div>
         )}
