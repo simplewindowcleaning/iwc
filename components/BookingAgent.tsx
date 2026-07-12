@@ -27,6 +27,7 @@ export function BookingAgent(props: {
   const [input, setInput] = useState('')
   const [thinking, setThinking] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
+  const [offTopicFollowup, setOffTopicFollowup] = useState(false)
   const openerDone = useRef(false)
   const lastNarrated = useRef('')
   const suppressNarration = useRef(false)
@@ -58,6 +59,7 @@ export function BookingAgent(props: {
     if (key === lastNarrated.current) return
     lastNarrated.current = key
     if (suppressNarration.current) { suppressNarration.current = false; return }
+    setOffTopicFollowup(false)
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m, {
       role: 'agent',
@@ -71,6 +73,7 @@ export function BookingAgent(props: {
 
   function confirmNearest() {
     if (!nearest) return
+    setOffTopicFollowup(false)
     suppressNarration.current = true
     lastNarrated.current = `${nearest.date}|${nearest.time}`
     onApplySlot(nearest.date, nearest.time)
@@ -89,9 +92,11 @@ export function BookingAgent(props: {
       },
     ])
     setVideoOpen(true)
+    setOffTopicFollowup(true)
   }
 
   function otherTimes() {
+    setOffTopicFollowup(false)
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m,
       { role: 'user', text: 'Show me other times' },
@@ -105,6 +110,7 @@ export function BookingAgent(props: {
     setInput('')
     const history: Msg[] = [...messages, { role: 'user', text }]
     setMessages(history)
+    setOffTopicFollowup(false)
     setThinking(true)
     try {
       const avail = Object.keys(slotMap).sort().slice(0, 30)
@@ -122,6 +128,7 @@ export function BookingAgent(props: {
             `Upcoming open slots (date (weekday): times, 24h clock) — trust the weekday labels, do not recompute them:\n${avail}\n` +
             `When multiple slots match a request, offer the earliest one (mention one alternative if useful). ` +
             `METHOD (for "how does it work / how is it done" questions): water-fed pole with reverse-osmosis + deionization filtered water — pure water dries completely spot-free, no soap residue; interiors use a traditional squeegee. When the user asks HOW the cleaning works, answer briefly and append the tag [SHOW_VIDEO] on its own line — the site will pop up a short demo video. ` +
+            `CONVERSATION TRACKING: if — and only if — the user's question is NOT about picking a booking date, time, or window count (e.g. it's about pricing, screens, the cleaning method, policies, or anything general), answer it normally, then append the tag [OFFTOPIC] on its own line at the very end. Do NOT add this tag for questions about dates, times, availability, or window count — those are on-topic. ` +
             `You cannot change the calendar yourself — when you find a slot the customer wants, tell them to tap it in the calendar below this chat. ` +
             `If nothing fits their request, offer to have Chris text them when something opens. Keep replies to 1-3 short sentences.`,
           messages: history.map(m => ({ role: m.role === 'agent' ? 'assistant' : 'user', content: m.text })),
@@ -132,6 +139,10 @@ export function BookingAgent(props: {
       if (raw.includes('[SHOW_VIDEO]')) {
         raw = raw.replace('[SHOW_VIDEO]', '').trim()
         setVideoOpen(true)
+      }
+      if (raw.includes('[OFFTOPIC]')) {
+        raw = raw.replace('[OFFTOPIC]', '').trim()
+        setOffTopicFollowup(true)
       }
       setMessages(m => [...m, { role: 'agent', text: raw || 'Hmm, I glitched — try again, or the calendar below always works.' }])
     } catch {
@@ -174,8 +185,9 @@ export function BookingAgent(props: {
           ))}
         </AnimatePresence>
 
-        {/* Quick actions — only while the opener is the latest word */}
-        {messages.length === 1 && nearest && (
+        {/* Quick actions — shown right after the opener, and again after any
+            off-topic detour (free-text question or the ladder chip) */}
+        {(messages.length === 1 || offTopicFollowup) && nearest && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
             className="flex gap-2 self-start mt-1">
             <button onClick={confirmNearest}
