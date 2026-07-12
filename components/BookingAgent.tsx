@@ -71,7 +71,12 @@ export function BookingAgent(props: {
     if (openerDone.current || !nearest) return
     if (awaitZip && !zipChosen) return
     openerDone.current = true
-    lastNarrated.current = `${date}|${time}`
+    // MapPanel's CalendarOverlay auto-selects this same nearest slot into
+    // date/time independently (its own effect on slotMap) — pre-register
+    // the value it will converge to, so the narration effect below
+    // recognizes that change as already-known instead of re-narrating it
+    // and wiping out these quick-action buttons a beat after they appear.
+    lastNarrated.current = `${nearest.date}|${nearest.time}`
     setMessages(m => [...m, {
       role: 'agent',
       text: `Hi ${zip} 👋 Our nearest slot for ${windowCount} windows is ${formatDate(nearest.date)} at ${formatTime(nearest.time)}. Does that work, or would you like to try some other times?`,
