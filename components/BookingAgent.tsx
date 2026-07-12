@@ -40,6 +40,7 @@ export function BookingAgent(props: {
   const [thinking, setThinking] = useState(false)
   const [videoOpen, setVideoOpen] = useState(false)
   const [offTopicFollowup, setOffTopicFollowup] = useState(false)
+  const [showQuickActions, setShowQuickActions] = useState(false)
   const [zipChosen, setZipChosen] = useState(!awaitZip)
   const openerDone = useRef(false)
   const lastNarrated = useRef('')
@@ -75,6 +76,7 @@ export function BookingAgent(props: {
       role: 'agent',
       text: `Hi ${zip} 👋 Our nearest slot for ${windowCount} windows is ${formatDate(nearest.date)} at ${formatTime(nearest.time)}. Does that work, or would you like to try some other times?`,
     }])
+    setShowQuickActions(true)
   }, [nearest, zip, windowCount, date, time, awaitZip, zipChosen])
 
   function pickZip(z: string) {
@@ -91,6 +93,7 @@ export function BookingAgent(props: {
     lastNarrated.current = key
     if (suppressNarration.current) { suppressNarration.current = false; return }
     setOffTopicFollowup(false)
+    setShowQuickActions(false)
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m, {
       role: 'agent',
@@ -105,6 +108,7 @@ export function BookingAgent(props: {
   function confirmNearest() {
     if (!nearest) return
     setOffTopicFollowup(false)
+    setShowQuickActions(false)
     suppressNarration.current = true
     lastNarrated.current = `${nearest.date}|${nearest.time}`
     onApplySlot(nearest.date, nearest.time)
@@ -125,10 +129,12 @@ export function BookingAgent(props: {
     ])
     setVideoOpen(true)
     setOffTopicFollowup(true)
+    setShowQuickActions(false)
   }
 
   function otherTimes() {
     setOffTopicFollowup(false)
+    setShowQuickActions(false)
     const hint = HINTS[hintIdx.current++ % HINTS.length]
     setMessages(m => [...m,
       { role: 'user', text: 'Show me other times' },
@@ -143,6 +149,7 @@ export function BookingAgent(props: {
     const history: Msg[] = [...messages, { role: 'user', text }]
     setMessages(history)
     setOffTopicFollowup(false)
+    setShowQuickActions(false)
     setThinking(true)
     try {
       const avail = Object.keys(slotMap).sort().slice(0, 30)
@@ -231,9 +238,10 @@ export function BookingAgent(props: {
           </motion.div>
         )}
 
-        {/* Quick actions — shown right after the opener, and again after any
+        {/* Quick actions — shown right after the opener (however many messages
+            preceded it, e.g. the zip-pick exchange), and again after any
             off-topic detour (free-text question or the ladder chip) */}
-        {(messages.length === 1 || offTopicFollowup) && nearest && (!awaitZip || zipChosen) && (
+        {(showQuickActions || offTopicFollowup) && nearest && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
             className="flex gap-2 self-start mt-1">
             <button onClick={confirmNearest}
