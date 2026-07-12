@@ -222,6 +222,18 @@ export function BookingAgent(props: {
     setShowQuickActions(false)
   }
 
+  function askFees() {
+    setMessages(m => [...m,
+      { role: 'user', text: 'Are there any extra fees or taxes?' },
+      {
+        role: 'agent',
+        text: 'No hidden fees or taxes — the price you see at checkout is what you pay. The only possible add-on is a small screen removal/reinstallation fee if you\'d like the tech to handle that for you. A full breakdown on screens is coming soon!',
+      },
+    ])
+    setOffTopicFollowup(true)
+    setShowQuickActions(false)
+  }
+
   function otherTimes() {
     setOffTopicFollowup(false)
     setShowQuickActions(false)
@@ -349,8 +361,9 @@ export function BookingAgent(props: {
 
         {/* Quick actions — shown right after the opener (however many messages
             preceded it, e.g. the zip-pick exchange), and again after any
-            off-topic detour (free-text question or the ladder chip) */}
-        {(showQuickActions || offTopicFollowup) && nearest && (
+            off-topic detour (free-text question or a persistent chip). Hidden
+            once browsing the 4-week calendar — that has its own Confirm. */}
+        {(showQuickActions || offTopicFollowup) && nearest && !browsingCalendar && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
             className="flex gap-2 self-start mt-1">
             <button onClick={confirmNearest}
@@ -388,12 +401,17 @@ export function BookingAgent(props: {
         )}
       </div>
 
-      {/* Persistent suggested question — pinned above the input for every state */}
-      <div className="px-3 pb-1 flex-shrink-0">
+      {/* Persistent suggested questions — pinned above the input for every state */}
+      <div className="px-3 pb-1 flex-shrink-0 flex flex-col gap-[5px]">
         <button onClick={askLadder}
           className="w-full text-[10.5px] font-bold px-[12px] py-[6px] rounded-full cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98] truncate"
           style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px dashed rgba(126,200,227,0.3)' }}>
           &ldquo;How is there no ladder for the 2nd story outside?&rdquo;
+        </button>
+        <button onClick={askFees}
+          className="w-full text-[10.5px] font-bold px-[12px] py-[6px] rounded-full cursor-pointer transition-all hover:bg-white/10 active:scale-[0.98] truncate"
+          style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px dashed rgba(126,200,227,0.3)' }}>
+          &ldquo;Are there any extra fees or taxes?&rdquo;
         </button>
       </div>
 
