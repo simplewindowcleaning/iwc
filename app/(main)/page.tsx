@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { NPCWidget } from "@/components/NPCWidget";
 import { BookingAgent } from "@/components/BookingAgent";
 import { AppHeader } from "@/components/AppHeader";
@@ -17,20 +17,7 @@ import type { Step } from "@/components/npc/types";
 const MapPanel = dynamic(() => import("@/components/MapPanel"), { ssr: false });
 
 export default function HomePage() {
-  return (
-    <Suspense fallback={null}>
-      <HomeContent />
-    </Suspense>
-  );
-}
-
-function HomeContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  // Homepage links carry ?ref=sw / ?ref=plans — any ref means "arrived from
-  // the homepage," which gets the agent-led zip-first opening state. Direct
-  // visits (typed URL, no ref) get the bare map + zip box only.
-  const [fromHomepage] = useState(() => searchParams.get("ref") !== null);
 
   // ── Shared booking state ─────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState(FALLBACK_DATE);
@@ -75,12 +62,18 @@ function HomeContent() {
 
   function initiateCheckout() { setContactModal(true); }
 
-  // Agent-driven zip pick: same flyTo + on-map calendar reveal as the
-  // traditional path, but WITHOUT revealing the NPC "main panel" yet —
-  // that only appears once a slot is confirmed (onSlotConfirmed below).
+  // Agent-driven zip pick: advances to the timeslot step (triggers MapPanel's
+  // flyTo + on-map calendar) WITHOUT revealing the NPC "main panel" yet — that
+  // only appears once a slot is confirmed (onSlotConfirmed below), and jumps
+  // straight to its address step since the agent already handled everything else.
   function handleAgentZipPick(zip: string) {
     setSelectedZip(zip);
     setActiveStep("timeslot");
+  }
+
+  function handleSlotConfirmed() {
+    setPanelVisible(true);
+    setActiveStep("contact");
   }
 
   function handleGoToReview() {
@@ -119,8 +112,7 @@ function HomeContent() {
           windowCount={windowCount}
           needsEstimate={needsEstimate}
           onZipChange={setSelectedZip}
-          onGo={() => { setPanelVisible(true); setGoTrigger(t => t + 1); }}
-          onOpen={() => setPanelVisible(true)}
+          onGo={() => setActiveStep("timeslot")}
           address={address}
           onWindowCountChange={setWindowCount}
           onDateChange={setSelectedDate}
@@ -132,62 +124,60 @@ function HomeContent() {
           promoEnabled={promoEnabled}
         />
 
-        {/* Floating right column — Instant Booking Agent above, traditional
-            widget below. Direct visits show neither until the traditional
-            zip/GO path reveals the widget; homepage-referred visits show
-            the agent immediately and lead with a zip picker. */}
-        {(fromHomepage || panelVisible) && (
+        {/* Floating right column — Instant Booking Agent is the universal
+            desktop entry point (always shown, opens with a zip picker). The
+            NPC "main panel" is isolated to mobile except for one job: the
+            address step, revealed only once a slot is confirmed and jumped
+            straight to "contact" — the agent already handled everything before it. */}
+        <motion.div
+          initial={{ x: 390, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ type: "spring", damping: 28, stiffness: 260, delay: 0.2 }}
+          style={{
+            position: "fixed",
+            top: 16,
+            right: 16,
+            bottom: 16,
+            width: 360,
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
+        >
+          {/* Agent chat — the conversational voice of the same booking state */}
           <motion.div
-            initial={{ x: 390, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", damping: 28, stiffness: 260, delay: 0.2 }}
+            initial={{ y: -14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.45 }}
             style={{
-              position: "fixed",
-              top: 16,
-              right: 16,
-              bottom: 16,
-              width: 360,
-              zIndex: 10,
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
+              flex: panelVisible ? "0 0 42%" : 1,
+              minHeight: 0,
+              borderRadius: 16,
+              background: "rgba(10, 6, 20, 0.80)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
+              border: "1px solid rgba(126,200,227,0.16)",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
+              overflow: "hidden",
             }}
           >
-            {/* Agent chat — the conversational voice of the same booking state */}
-            {fromHomepage && (
-              <motion.div
-                initial={{ y: -14, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ type: "spring", damping: 26, stiffness: 240, delay: 0.45 }}
-                style={{
-                  flex: panelVisible ? "0 0 42%" : 1,
-                  minHeight: 0,
-                  borderRadius: 16,
-                  background: "rgba(10, 6, 20, 0.80)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
-                  border: "1px solid rgba(126,200,227,0.16)",
-                  boxShadow: "0 8px 40px rgba(0,0,0,0.45)",
-                  overflow: "hidden",
-                }}
-              >
-                <BookingAgent
-                  zip={selectedZip}
-                  windowCount={windowCount}
-                  date={selectedDate}
-                  time={selectedTime}
-                  slotMap={slotMap}
-                  onApplySlot={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
-                  awaitZip={fromHomepage}
-                  zipConfirmedExternally={activeStep !== "location"}
-                  onZipPick={handleAgentZipPick}
-                  onSlotConfirmed={() => setPanelVisible(true)}
-                />
-              </motion.div>
-            )}
+            <BookingAgent
+              zip={selectedZip}
+              windowCount={windowCount}
+              date={selectedDate}
+              time={selectedTime}
+              slotMap={slotMap}
+              onApplySlot={(d, t) => { setSelectedDate(d); setSelectedTime(t); }}
+              awaitZip={true}
+              zipConfirmedExternally={activeStep !== "location"}
+              onZipPick={handleAgentZipPick}
+              onSlotConfirmed={handleSlotConfirmed}
+            />
+          </motion.div>
 
-            {/* Traditional booking widget — the agent's visible instrument panel */}
-            {panelVisible && (
+          {/* Address step only — the NPC widget's one remaining desktop job */}
+          {panelVisible && (
               <motion.div
                 initial={{ y: 18, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -240,7 +230,6 @@ function HomeContent() {
               </motion.div>
             )}
           </motion.div>
-        )}
       </div>
 
       {/* ── Review overlay — appears instead of routing directly to /summary ── */}
