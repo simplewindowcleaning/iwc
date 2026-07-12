@@ -54,6 +54,10 @@ interface Props {
   onZipChange?: (zip: string) => void;
   onBeforeCheckout?: () => void;
   goTrigger?: number;
+  // Lets the parent start this panel on a step other than "location" — used
+  // on desktop where the agent already handles location/timeslot/windows and
+  // this panel only mounts for the final address step. Read once at mount.
+  initialStep?: Step;
 }
 
 export function NPCWidget(props: Props) {
@@ -70,7 +74,7 @@ export function NPCWidget(props: Props) {
   // ── Panel state ───────────────────────────────────────────────────
   const [skin, setSkin] = useState<Skin>("clean");
   const [mode, setMode] = useState<ThemeMode>("dark");
-  const [step, setStep] = useState<Step>("location");
+  const [step, setStep] = useState<Step>(props.initialStep ?? "location");
 
   useEffect(() => {
     if (props.goTrigger && step === "location") goToStep("timeslot");

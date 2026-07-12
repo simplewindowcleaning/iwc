@@ -226,6 +226,7 @@ export default function HomePage() {
                   onBeforeCheckout={initiateCheckout}
                   slotMap={slotMap}
                   goTrigger={goTrigger}
+                  initialStep="contact"
                 />
               </motion.div>
             )}
